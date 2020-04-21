@@ -1,5 +1,5 @@
 ## Workshop 1 & 2: Geometric Morphometrics (GMM) and Archaeology
-#### Instructor: Dr. Christian Steven Hoggard
+#### Organisers: Dr Christian Steven Hoggard and Dr Atsushi Noguchi
 #### Location: Online (through Slack/Zoom/GitHub/Twitter)
 
 #### About the workshops
