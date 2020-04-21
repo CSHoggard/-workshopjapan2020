@@ -4,7 +4,7 @@
 
 #### About the workshops
 
-This workshop is designed to provide an introduction into the application and potential of geometric morphometric (GMM) methodologists for archaeologists, researchers and enthusiasts. The first workshop  introduces participants to the mathematical underpinnings of statistical shape and form, before detailing the fundamentals of geometric morphometrics, emphasising its statistical power and converage in comparison to traditional morphometrics. The second workshop will be an R-based introduction to geometric morphometrics through the Momocs package.
+This workshop is designed to provide an introduction into the application and potential of geometric morphometric (GMM) methodologists for Japanese archaeologists, researchers and enthusiasts. The first workshop introduces participants to the mathematical underpinnings of statistical shape and form, before detailing the fundamentals of geometric morphometrics, emphasising its statistical power and converage in comparison to traditional morphometrics. The second workshop will be an R-based introduction to geometric morphometrics through the Momocs package.
 
 #### Software
 
