@@ -1,5 +1,6 @@
-## Workshop 1 & 2: Geometric Morphometrics and Archaeology (A Digital Workshop)
+## Workshop 1 & 2: Geometric Morphometrics and Archaeology
 #### Instructor: Dr. Christian Steven Hoggard
+#### Location: Online (through Slack/Zoom/GitHub/Twitter)
 
 #### About the workshops
 
