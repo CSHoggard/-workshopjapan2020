@@ -8,7 +8,7 @@ This workshop is designed to provide an introduction into the application and po
 
 #### Software
 
-Software: All data input, manipulation and analyses will be **performed in the R Environment through Momocs**. **_Please ensure R/RStudio and all files are downloaded onto your computer/laptop before or at the beginning of workshop two**. Other digitisation methods including tpsDig2 (https://life.bio.sunysb.edu/morph/soft-dataacq.html) and GUImorph (https://github.com/GUImorph/GUImorph) will also be showcased.
+Software: All data input, manipulation and analyses will be **performed in the R Environment through Momocs**. **_Please ensure R/RStudio and all files are downloaded onto your computer/laptop before or at the beginning of workshop two_**. Other digitisation methods including tpsDig2 (https://life.bio.sunysb.edu/morph/soft-dataacq.html) and GUImorph (https://github.com/GUImorph/GUImorph) will also be showcased.
 
 
 #### Suggested Reading
