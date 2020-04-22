@@ -69,13 +69,13 @@ Out(tpslines)
 
 To download the database into R/Rstudio we can use the `getURL` function in `RCurl` and download the raw file from GitHub, as follows:
 
-```{r chunk4, echo=TRUE, eval=TRUE}
+```{r chunk5, echo=TRUE, eval=TRUE}
 y <- getURL("https://raw.githubusercontent.com/CSHoggard/-workshopjapan2020/master/workshop_2/ivanovaite_et_al_2019.csv")
 database <- read_csv(y)
 ```
 
 We can now preview our database using the `head` function:
 
-```{r chunk5, echo=TRUE, eval=TRUE}
+```{r chunk6, echo=TRUE, eval=TRUE}
 head(database)
 ```
