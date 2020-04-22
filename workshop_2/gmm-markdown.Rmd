@@ -1,0 +1,61 @@
+---
+title: '**A Practical Introduction to Geometric Morphometrics for Archaeological Science**'
+author: "Dr. Christian Steven Hoggard and Dr. Atsushi Noguchi"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## **Introduction**
+
+This guide provides a "hands-on" step-by-step introduction for the application of geometric morphometric (GMM henceforth) methodologies in archaeological science (as conducted the R Environment). Using a published dataset this guide will guide the reader through four key GMM procedures: 1) data importing (and creation), 2) data transformation, 3) data analysis and 4) data visualisation. A Japanese translation of this documentation is also provided.  
+
+This practical constitutes the second workshop of the #StayHomeButStudy event, organised by Dr. Atsushi Noguchi, Dr. Christian Steven Hoggard and Prof. Ben Marwick and is tailored for Japanese archaeologists, researchers and enthusiasts.  
+
+### **About the code, packages and data**
+
+The data used throughout this guide originates from Ivanovaitė et al (2020): *"All these Fantastic Cultures? Research History and Regionalization in the Late Palaeolithic Tanged Point Cultures of Eastern Europe"*, published in the European Journal of Archaeology (https://doi.org/10.1017/eaa.2019.59).The data can be found on GitHub (https://github.com/CSHoggard/-Eastern-Europe-Tanged-Points) and the Open Science Framework (https://osf.io/agrwb/)./
+
+All code, data and markdown document (in HTML and PDF format) for this practical can be found on the workshop repository (https://github.com/CSHoggard/-japanworkshop2020tree/master/workshop_2).
+
+The GMM procedure detailed below is grounded on two-dimensional outline analysis. In conducting outline analysis for this practical the follow packages (including their imported packages) are necessary:  
+* **Momocs** (Version 1.2.9) https://cran.r-project.org/web/packages/Momocs/index.html   
+* **tidyverse** (Version 1.3.0) https://cran.r-project.org/web/packages/tidyverse/index.html 
+
+For literature pertaining to outline analysis see:\
+* Claude, J. (2008). *Morphometrics with R*. Springer Publishing.\
+* Bonhomme, V., Picq, S., Gaucherel, C., & Claude, J. (2014). Momocs: Outline analysis using R. *Journal of Statistical Software*, 56: 1–24.\
+* Caple, J., Byrd, J., & Stephan, C. N. (2017). Elliptical Fourier analysis: Fundamentals, applications, and value for forensic anthropology. *International Journal of Legal Medicine*, 131 (6): 1675–1690.\
+* Ferson, S., Rohlf, F. J., & Koehn, R. K. (1985). Measuring shape variation of two-dimensional outlines. *Systematic Zoology*, 34 (1): 59–68.\
+* Kuhl, F. P., & Giardina, C. R. (1982). Elliptic Fourier features of a closed contour. *Computer Graphics and Image Processing*, 18 (3): 236–258.\
+* Yoshioka, Y. (2004). Analysis of petal shape variation of Primula sieboldii by elliptic fourier descriptors and principal component analysis. *Annals of Botany*, 94 (5), 657–664.\
+* Zahn, C. T., & Roskies, R. Z. (1972). Fourier descriptors for plane closed curves. *IEEE Transactions on Computers*, C-21 (3): 269–281.
+
+## **Software installation**
+
+Following the installation of R or RStudio, we can now install the required packages:  
+```{r chunk1, echo=TRUE, eval=FALSE}
+if(!require("Momocs")) install.packages('Momocs', repos='http://cran.us.r-project.org')  
+if(!require("tidyverse")) install.packages('tidyverse', repos='http://cran.us.r-project.org')
+if(!require("RCurl")) install.packages('RCurl', repos='http://cran.us.r-project.org')
+```
+
+The tidyverse may take time to install given the size of the file, so please be patient. Once installed, the packages through the `library` function:  
+
+```{r chunk2, echo=TRUE, eval=FALSE}
+library(Momocs)  
+library(tidyverse)
+```
+
+## **About the data**  
+
+This data was composed to assess the robustness of cultural taxonomies in the Final Palaeolithic period of Eastern Europe, as denoted through tanged point variants. It consists of 250 tanged point outlines and produced in the TPS Suite (https://life.bio.sunysb.edu/morph/soft-dataacq.html), using the *outline object* function. As this dataset was produced in the TPS Suite the file type is *.tps*. In their composition these outlines are semilandmarks, an algorithm-produced series of equidistant points are each shape. A database of all examples and their respective cultural assignment is also provided./
+
+To import all data 
+
+## **Importing Geometric Morphometric data**  
+There are a number of ways which landmark and outline morphometric data can be imported into R. Here we will use the `import_tps` function from Momocs.
