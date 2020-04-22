@@ -44,6 +44,8 @@ if(!require("tidyverse")) install.packages('tidyverse', repos='http://cran.us.r-
 if(!require("rio")) install.packages('RCurl', repos='http://cran.us.r-project.org')
 ```
 
+To download the data into R/Rstudio we can use the `import` function from the `rio` package: 
+
 ```{r}
 # read in the data from GitHub
 database <- rio::import("https://github.com/benmarwick/-workshopjapan2020/raw/master/workshop_2/database.rds")
@@ -69,8 +71,6 @@ There are a number of ways which landmark and outline morphometric data can be i
 ```{r chunk4, echo=TRUE, eval=TRUE}
 Out(tpslines$coo)
 ```
-
-To download the database into R/Rstudio we can use the `getURL` function in `RCurl` and download the raw file from GitHub, as follows:
 
 We can now preview our database using the `head` function:
 
