@@ -41,17 +41,14 @@ Following the installation of R or RStudio, we can now install the required pack
 ```{r chunk1, echo=TRUE, eval=TRUE, message=FALSE, warning = FALSE}
 if(!require("Momocs")) install.packages('Momocs', repos='http://cran.us.r-project.org')  
 if(!require("tidyverse")) install.packages('tidyverse', repos='http://cran.us.r-project.org')
-if(!require("RCurl")) install.packages('RCurl', repos='http://cran.us.r-project.org')
+if(!require("rio")) install.packages('RCurl', repos='http://cran.us.r-project.org')
 ```
 
 ```{r}
+# read in the data from GitHub
+database <- rio::import("https://github.com/benmarwick/-workshopjapan2020/raw/master/workshop_2/database.rds")
 
-
-
-readRDS()
-
-rio::import("https://oscarkjell.se/text_models/trained_anew1999_valence.rds")
-
+tpslines <- rio::import("https://github.com/benmarwick/-workshopjapan2020/raw/master/workshop_2/tpslines.rds")
 ```
 
 
@@ -60,7 +57,6 @@ The tidyverse may take time to install given the size of the file, so please be 
 ```{r chunk2, echo=TRUE, eval=TRUE, message=FALSE}
 library(Momocs)  
 library(tidyverse)
-library(RCurl)
 ```
 
 ## **About the data**  
@@ -68,22 +64,13 @@ library(RCurl)
 This data was composed to assess the robustness of cultural taxonomies in the Final Palaeolithic period of Eastern Europe, as denoted through tanged point variants. It consists of 250 tanged point outlines and produced in the TPS Suite (https://life.bio.sunysb.edu/morph/soft-dataacq.html), using the *outline object* function. As this dataset was produced in the TPS Suite the file type is *.tps*. In their composition these outlines are semilandmarks, an algorithm-produced series of equidistant points are each shape. A database of all examples and their respective cultural assignment is also provided./
 
 ## **Importing Geometric Morphometric data**  
-There are a number of ways which landmark and outline morphometric data can be imported into R. Here, for ease and replicability, ./
+There are a number of ways which landmark and outline morphometric data can be imported into R. Here, for ease and replicability, 
 
 ```{r chunk4, echo=TRUE, eval=TRUE}
-tpslink <- getURL("https://raw.githubusercontent.com/CSHoggard/-workshopjapan2020/master/workshop_2/ivanovaite_et_al_2019.TPS")
-
-tpslines <- read_lines(tpslink)
-Out(tpslines)
+Out(tpslines$coo)
 ```
-
 
 To download the database into R/Rstudio we can use the `getURL` function in `RCurl` and download the raw file from GitHub, as follows:
-
-```{r chunk5, echo=TRUE, eval=TRUE}
-y <- getURL("https://raw.githubusercontent.com/CSHoggard/-workshopjapan2020/master/workshop_2/ivanovaite_et_al_2019.csv")
-database <- read_csv(y)
-```
 
 We can now preview our database using the `head` function:
 
