@@ -44,6 +44,17 @@ if(!require("tidyverse")) install.packages('tidyverse', repos='http://cran.us.r-
 if(!require("RCurl")) install.packages('RCurl', repos='http://cran.us.r-project.org')
 ```
 
+```{r}
+
+
+
+readRDS()
+
+rio::import("https://oscarkjell.se/text_models/trained_anew1999_valence.rds")
+
+```
+
+
 The tidyverse may take time to install given the size of the file, so please be patient. Once installed, the packages through the `library` function:  
 
 ```{r chunk2, echo=TRUE, eval=TRUE, message=FALSE}
