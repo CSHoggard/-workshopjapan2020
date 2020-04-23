@@ -62,7 +62,7 @@ There are a number of ways which landmark and outline morphometric data can be i
 ```{r chunk4, echo=TRUE, eval=TRUE}
 tpslink <- getURL("https://raw.githubusercontent.com/CSHoggard/-workshopjapan2020/master/workshop_2/ivanovaite_et_al_2019.TPS")
 
-tpslines <- read_lines(tpslink)
+tpslines <- readLines(tpslink)
 Out(tpslines)
 ```
 
