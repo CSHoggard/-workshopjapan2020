@@ -41,20 +41,20 @@ Following the installation of R or RStudio, we can now install the required pack
 ```{r chunk1, echo=TRUE, eval=TRUE, message=FALSE, warning = FALSE}
 if(!require("Momocs")) install.packages('Momocs', repos='http://cran.us.r-project.org')  
 if(!require("tidyverse")) install.packages('tidyverse', repos='http://cran.us.r-project.org')
-if(!require("rio")) install.packages('RCurl', repos='http://cran.us.r-project.org')
+if(!require("rio")) install.packages('rio', repos='http://cran.us.r-project.org')
 ```
 
-To download the data into R/Rstudio we can use the `import` function from the `rio` package: 
+To download the data into R/Rstudio we can use the `import` function from the `rio` package, and extract the data from the GitHub repository : 
 
 ```{r}
 # read in the data from GitHub
-database <- rio::import("https://github.com/benmarwick/-workshopjapan2020/raw/master/workshop_2/database.rds")
+database <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_2/database.rds")
 
-tpslines <- rio::import("https://github.com/benmarwick/-workshopjapan2020/raw/master/workshop_2/tpslines.rds")
+tpsdata <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_2/tpslines.rds")
 ```
 
 
-The tidyverse may take time to install given the size of the file, so please be patient. Once installed, the packages through the `library` function:  
+The tidyverse may take time to install given the size of the file, so please be patient. Once installed, the packages can be activated through the `library` function:  
 
 ```{r chunk2, echo=TRUE, eval=TRUE, message=FALSE}
 library(Momocs)  
@@ -68,24 +68,8 @@ This data was composed to assess the robustness of cultural taxonomies in the Fi
 ## **Importing Geometric Morphometric data**  
 There are a number of ways which landmark and outline morphometric data can be imported into R. Here, for ease and replicability, 
 
-```{r chunk4, echo=TRUE, eval=TRUE}
-<<<<<<< HEAD
-tpslink <- getURL("https://raw.githubusercontent.com/CSHoggard/-workshopjapan2020/master/workshop_2/ivanovaite_et_al_2019.TPS")
-
-tpslines <- readLines(tpslink)
-Out(tpslines)
-```
-
 
 To download the database into R/Rstudio we can use the `getURL` function in `RCurl` and download the raw file from GitHub, as follows:
-
-```{r chunk5, echo=TRUE, eval=TRUE}
-y <- getURL("https://raw.githubusercontent.com/CSHoggard/-workshopjapan2020/master/workshop_2/ivanovaite_et_al_2019.csv")
-database <- read_csv(y)
-=======
-Out(tpslines$coo)
->>>>>>> 77c3c4d0ca6ddef96a4c43d0af29720201b055c7
-```
 
 We can now preview our database using the `head` function:
 
