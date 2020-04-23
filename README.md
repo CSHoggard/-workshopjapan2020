@@ -1,5 +1,5 @@
 ## Workshop 1 & 2: Geometric Morphometrics (GMM) and Archaeology
-（日本語版は[下](#ワークショップ1&2-幾何形態測定学(GMM)と考古学)にあります）
+（日本語版は[下](#Japanese)にあります）
 #### Organisers: Dr Christian Steven Hoggard and Atsushi Noguchi
 #### Location: Online (through Slack/Zoom/GitHub/Twitter)
 
@@ -37,6 +37,7 @@ principal component analysis. *Annals of Botany*, 94(5), 657–664.
 
 Zelditch, M.L., Swiderski D.L., Sheets H.D. and Fink, W.L. (2004). *Geometric morphometrics for biologists: a primer*. San Diego (CA): Elsevier Academic Press.
 
+###### Japanese
 ## ワークショップ1&2 幾何形態測定学(GMM)と考古学
 
 #### オーガナイザー: Dr Christian Steven Hoggard、野口　淳
