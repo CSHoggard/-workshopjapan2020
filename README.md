@@ -1,5 +1,5 @@
 ## Workshop 1 & 2: Geometric Morphometrics (GMM) and Archaeology
-（日本語版は下にあります）
+（日本語版は[下](#ワークショップ1&2-幾何形態測定学(GMM)と考古学)にあります）
 #### Organisers: Dr Christian Steven Hoggard and Atsushi Noguchi
 #### Location: Online (through Slack/Zoom/GitHub/Twitter)
 
