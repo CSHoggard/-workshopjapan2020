@@ -38,7 +38,7 @@ For literature pertaining to outline analysis see:\
 ## **Software installation**
 
 Following the installation of R or RStudio, we can now install the required packages:  
-```{r chunk1, echo=TRUE, eval=TRUE, message=FALSE, warning = FALSE}
+```{r chunk1, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
 if(!require("Momocs")) install.packages('Momocs', repos='http://cran.us.r-project.org')  
 if(!require("tidyverse")) install.packages('tidyverse', repos='http://cran.us.r-project.org')
 if(!require("rio")) install.packages('rio', repos='http://cran.us.r-project.org')
@@ -47,14 +47,13 @@ if(!require("rio")) install.packages('rio', repos='http://cran.us.r-project.org'
 To download the data into R/Rstudio we can use the `import` function from the `rio` package, and extract the data from the GitHub repository : 
 
 ```{r}
-# read in the data from GitHub
-database <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_2/database.rds")
+database <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_2/database.rds") # read in from GitHub
 
-tpsdata <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_2/tpslines.rds")
+tpsdata <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_2/tpslines.rds") # read in from GitHub
 ```
 
 
-The tidyverse may take time to install given the size of the file, so please be patient. Once installed, the packages can be activated through the `library` function:  
+The tidyverse and Momocs packages may take time to install given the size of the file, so please be patient. Once installed, the packages can be activated through the `library()` function:  
 
 ```{r chunk2, echo=TRUE, eval=TRUE, message=FALSE}
 library(Momocs)  
@@ -63,16 +62,40 @@ library(tidyverse)
 
 ## **About the data**  
 
-This data was composed to assess the robustness of cultural taxonomies in the Final Palaeolithic period of Eastern Europe, as denoted through tanged point variants. It consists of 250 tanged point outlines and produced in the TPS Suite (https://life.bio.sunysb.edu/morph/soft-dataacq.html), using the *outline object* function. As this dataset was produced in the TPS Suite the file type is *.tps*. In their composition these outlines are semilandmarks, an algorithm-produced series of equidistant points are each shape. A database of all examples and their respective cultural assignment is also provided./
+This data was composed to assess the robustness of cultural taxonomies in the Final Palaeolithic period of Eastern Europe, as denoted through tanged point variants. It consists of 250 tanged point outlines and produced in the TPS Suite (https://life.bio.sunysb.edu/morph/soft-dataacq.html), using the *outline object* function. As this dataset was produced in the TPS Suite the file format is *.tps*. In their composition these outlines are semilandmarks, an algorithm-produced series of equidistant points are each shape. A database of all examples and their respective cultural assignment is also provided.
 
-## **Importing Geometric Morphometric data**  
-There are a number of ways which landmark and outline morphometric data can be imported into R. Here, for ease and replicability, 
+## **Importing Geometric Morphometric data: alternative approaches**  
+
+There are a number of ways which landmark and outline morphometric data can be imported into R. Here, for ease and replicability, the data was stored on a GitHub repository and directed into the R environment, utilising the `Momocs::import_tps()` function in a .rds file. Other ways to import .tps data (if saved locally) include the `geomorph::readland.tps()` and rewriting tools in Momocs e.g. `Momocs::rw_rule()`. Data from stereomorph can also be imported through the `Momocs::import_StereoMorph_ldk()` and `Momocs:import_StereoMorph_curve()` functions.
+
+Within Momocs, outlines can be extracted from silhouette data through the `Momocs::import_jpg()` and `Momocs::import_jpg1()` functions. See their helpfiles for more details. 
 
 
-To download the database into R/Rstudio we can use the `getURL` function in `RCurl` and download the raw file from GitHub, as follows:
+## **Examining the data**
 
-We can now preview our database using the `head` function:
+We can now preview our database using the `head()` function, and call our tpsdata through the `View` functions:
 
-```{r chunk6, echo=TRUE, eval=TRUE}
+```{r chunk3, echo=TRUE, eval=TRUE}
 head(database)
 ```
+  
+We can observe that the group data (Archaeological_Unit) is of type 'character' and not 'factor', as required for our analysis. This can be corrected through the `base::as_factor()`function:
+
+```{r chunk4, echo=TRUE, eval=TRUE}
+database$Archaeological_Unit <- as.factor(database$Archaeological_Unit)
+
+is.factor(database$Archaeological_Unit) # check to see the data is now of type 'character'
+```
+
+We can now inspect the number of different archaeological units within our dataset through the `base::summary()` function:
+
+```{r chunk5, echo=TRUE, eval=TRUE}
+summary(database$Archaeological_Unit)
+```
+
+The `base::View()` function will highlight the three constituent parts of the tps file: the 1) *Coo* (coordinate data), 2) *cur* (the curve data if present), and 3) *scale* (the scale data if present). It is the Coo data which we will take forward, with the database, to examine shape variation among our tanged points.
+
+## **GMM Procedure 1: Outline file creation**
+
+
+
