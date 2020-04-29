@@ -146,3 +146,13 @@ XXXXXXXXXXXXXXXXXX
 efashape <- efourier(shape, nb.h = 11, smooth.it = 0, norm = TRUE)
 efashape
 ```
+
+## **GMM Procedure 5: Exploratory Procedure #1: PCA**
+
+XXXXXXXXXXXXXXXXXX  
+
+```{r chunk12, echo=TRUE, eval=TRUE, message=FALSE}
+pcashape <- PCA(efashape)
+PCcontrib(pcashape)
+
+```
