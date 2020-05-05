@@ -1,8 +1,9 @@
 ---
 title: '**Archaeological Geometric Morphometrics and R**'
-subtitle: 'As part of the #StayHomeButStudy Workshop Series' 
-author: 'Dr Christian Steven Hoggard (University of Southampton, United Kingdom)'
+author: "Dr Christian Steven Hoggard (University of Southampton, United Kingdom)"
+subtitle: 'As part of the #StayHomeButStudy Workshop Series'
 output:
+  word_document: default
   pdf_document: default
   html_document: default
 ---
@@ -13,41 +14,42 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## **Introduction**
 
-This guide provides a "hands-on" step-by-step introduction for the application of geometric morphometric (GMM) methodologies in archaeological science, as conducted the R Environment. Using a published dataset this workflow will guide the reader through four key GMM procedures: 1) data importing (and creation), 2) data transformation, 3) data analysis and 4) data visualisation. A Japanese translation of this documentation is also provided.\  
+This guide provides a "hands-on" step-by-step introduction into the application of geometric morphometric (GMM) methodologies in archaeological science, as conducted the R Environment. Using a published dataset this workflow will guide the reader through four key GMM procedures: 1) data importing (and creation), 2) data transformation, 3) data analysis and 4) data visualisation. A Japanese translation of this documentation is also provided.\  
 
-I will first demonstrate the actions or functions on Zoom and then allow time for all participants to run the function. Should there be any queries then please let us know in the Slack workspace.\  
+I will first demonstrate the actions or functions on Zoom (using this markdown document) and then allow time for all participants to run the function (3-5 minutes per function). To run a 'chunk', a shaded area of function we can press the "Run selected chunk" button, represented by a play button or use the shortcut `ctrl + enter`. Should there be any queries then please let us know in the Slack workspace. Conversely, when you complete a function please could you use a "thumbs up" emoji on Slack. We are allowing time between functions to ensure that all participants keep up, if you finish a particular process early explore the functions in the packages through the 'Help' tab in the 'Packages' window.\  
 
 This practical constitutes the second workshop of the #StayHomeButStudy event, organised by Dr. Atsushi Noguchi, and is tailored  for Japanese archaeologists, researchers and enthusiasts.\  
 
 ### **About the Code, Packages and Data**
 
-The data used throughout this guide originates from Ivanovaitė et al (2020): *"All these Fantastic Cultures? Research History and Regionalization in the Late Palaeolithic Tanged Point Cultures of Eastern Europe"*, published in open-access on the European Journal of Archaeology (https://doi.org/10.1017/eaa.2019.59). The data can be found on my GitHub repository (https://github.com/CSHoggard/-Eastern-Europe-Tanged-Points), in addition to the Open Science Framework (https://osf.io/agrwb/).\  
+The data used throughout this guide originates from Ivanovaitė et al (2020): *"All these Fantastic Cultures? Research History and Regionalization in the Late Palaeolithic Tanged Point Cultures of Eastern Europe"*, published in open-access in the European Journal of Archaeology (https://doi.org/10.1017/eaa.2019.59). The data can be found on a GitHub repository (https://github.com/CSHoggard/-Eastern-Europe-Tanged-Points), in addition to the Open Science Framework (https://osf.io/agrwb/).\  
 
 All code, and data, including the markdown document (in HTML and PDF format) for this practical can be found on GitHub (https://github.com/CSHoggard/-japanworkshop2020tree/master/workshop_2).\  
 
-The GMM procedure detailed below is grounded on two-dimensional outline analysis. In conducting outline analysis for this practical the follow packages (including their imported packages) are necessary:  
-* **Momocs** (Version 1.2.9) https://cran.r-project.org/web/packages/Momocs/index.html   
+The GMM procedure detailed below is grounded on two-dimensional outline analysis. In conducting outline analysis for this practical the following two packages are necessary:  
+* **Momocs** (Version 1.3.0) https://cran.r-project.org/web/packages/Momocs/index.html   
 * **tidyverse** (Version 1.3.0) https://cran.r-project.org/web/packages/tidyverse/index.html 
-
 ## **Software Installation**
 
-Following the installation of R or RStudio, we can now install the required packages:  
+Following the installation of R and RStudio, we can now install the required packages:\  
+
 ```{r chunk1, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
 if(!require("Momocs")) install.packages('Momocs', repos='http://cran.us.r-project.org')  
 if(!require("tidyverse")) install.packages('tidyverse', repos='http://cran.us.r-project.org')
 if(!require("rio")) install.packages('rio', repos='http://cran.us.r-project.org')
 ```
 
-To download the data into R/Rstudio we can use the `import` function from the `rio` package, and extract the data from the GitHub repository: 
+As the tidyverse and Momocs packages may take time to install given the size of the files *please ensure that these are downloaded prior the workshop*.\  
+
+To bring the data (from Github) into R/Rstudio we can use the `import` function from the `rio` package, and extract the data from the repository:\   
 
 ```{r}
-database <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_2/database.rds") # read in from GitHub
+database <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_2/database.rds")
 
-tpsdata <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_2/tpslines.rds") # read in from GitHub
+tpsdata <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_2/tpslines.rds") 
 ```
 
-
-The tidyverse and Momocs packages may take time to install given the size of the file, so please be patient. *Please ensure that these are downloaded prior the workshop*. Once installed, the packages can be activated through the `library()` function:  
+Once installed, the packages can be activated through the `library()` function:  
 
 ```{r chunk2, echo=TRUE, eval=TRUE, message=FALSE}
 library(Momocs)  
@@ -56,26 +58,26 @@ library(tidyverse)
 
 ## **About the Data**  
 
-This data was composed to assess the robustness of cultural taxonomies in the Final Palaeolithic period of Eastern Europe, as portrayed through tanged point variants. It consists of 250 tanged point outlines and produced in the TPS Suite (https://life.bio.sunysb.edu/morph/soft-dataacq.html), using the *outline object* function. As this dataset was produced in the TPS Suite the file format is *.tps*. In their composition these outlines are semilandmarks, an algorithm-produced series of equidistant points are each shape. A database of all examples and their respective cultural assignment is also provided.\  
+This data was composed to assess the robustness of cultural taxonomies in the Final Palaeolithic period of Eastern Europe, as portrayed through tanged point variants. It consists of 250 tanged point outlines and produced in the TPS Suite (https://life.bio.sunysb.edu/morph/soft-dataacq.html), using the **outline object** function. As this dataset was produced in the TPS Suite the file format is **.tps**. In their composition these outlines are semilandmarks, an algorithm-produced series of equidistant points are each shape. A database of all examples and their respective cultural assignment is also provided.\  
 
-## **Importing Geometric Morphometric Data: Alternative Approaches**  
+## **Importing GMM Data: Alternative Approaches**  
 
-There are a number of ways which landmark and outline morphometric data can be imported into the R Environment. Here, for ease and replicability, the outline data (in .tps format) was stored on a GitHub repository and directed into the R environment, utilising the `Momocs::import_tps()` function in a .rds file. Other ways to import .tps data (if saved locally) include the `geomorph::readland.tps()` and rewriting tools in Momocs e.g. `Momocs::rw_rule()`. Data from stereomorph can also be imported through the `Momocs::import_StereoMorph_ldk()` and `Momocs:import_StereoMorph_curve()` functions.\  
+There are a number of ways which landmark and outline morphometric data can be imported into the R Environment. Here, for ease and replicability, the outline data (in .tps format) was stored on a GitHub repository and directly fed into the R environment, utilising the `Momocs::import_tps()` function in a .rds file. Other ways to import .tps data (if saved locally) include the above function, `geomorph::readland.tps()` and rewriting tools in Momocs e.g. `Momocs::rw_rule()`. Data from stereomorph can also be imported through the `Momocs::import_StereoMorph_ldk()` and `Momocs:import_StereoMorph_curve()` functions.\    
 
-Within Momocs, outlines can be extracted from silhouette data through the `Momocs::import_jpg()` and `Momocs::import_jpg1()` functions. See their respective helpfiles for more details. These will be demonstrated at the end of the workshop.\  
+Note: for the purpose of this workshop I will detail in-text the function and its constitutent package e.g. `geomorph::readland.tps()`, however only the function is what will be 'used' so-to-speak e.g. `readland.tps(). This helps you to understand what packages the functions originate from.  
 
+Within Momocs, outlines can be extracted from silhouette data through the `Momocs::import_jpg()` and `Momocs::import_jpg1()` functions. See their respective helpfiles for more details on these functions. These will be demonstrated at the end of the workshop.\  
 
 ## **Examining the Data**
 
-With our data now in the R Environment we can now call our tpsdata through the `base:: View` functions. The `base::View()` function will highlight the three constituent parts of the tps file: the 1) *Coo* (coordinate data), 2) *cur* (the curve data if present), and 3) *scale* (the scale data if present). It is the Coo data which we will take forward, with the database, to examine shape variation among our tanged points. It is best not to call the tps data as R will stream all coordinate data for each example.\    
-
+With our data now in the R Environment we can now call our tpsdata object through the `base:: View` functions. The `base::View()` function will highlight the three constituent parts of the tps file: the 1) *Coo* (coordinate data), 2) *cur* (the curve data if necessary), and 3) *scale* (the scale data if present). It is the Coo and scale data which we will take forward, with the database, to examine shape variation among our tanged points. It is best not to call the tps data as R will stream all coordinate data for each example.\  
 We can also inspect our database using the `head()` function, and examine the different components of our dataset.\  
 
 ```{r chunk3, echo=TRUE, eval=TRUE}
 head(database)
 ```
   
-We can observe that the group data we want to examine (Archaeological_Unit) is `<chr>`, of type 'character', and not `<fctr>` ('factor'), as required for our analysis. This can be corrected through the `base::as_factor()`function:  
+We can observe that the group data we want to examine (Archaeological_Unit) is `<chr>`, that is to say of type 'character', and not `<fctr>` ('factor'), as required for our analysis. This can be corrected through the `base::as_factor()`function and confirmed through the `base::is_factor()` function:  
 
 ```{r chunk4, echo=TRUE, eval=TRUE}
 database$Archaeological_Unit <- as.factor(database$Archaeological_Unit)
@@ -91,46 +93,49 @@ summary(database$Archaeological_Unit)
 
 ## **GMM Procedure 1: Outline File Creation**
 
-Central to Momocs are a specific suite of shape classes for: 1) *outlines* (OutCoo), *open outlines* (OpnCoo) and *landmarks* (LdkCoo). While some operations in Momocs are generic and do not depend on one of these classes, many functions require your data to be one of these S3 objects. In this instance our tps data is comprised of outlines, and so we wish for our data to be `OutCoo`, as to enable efourier (elliptic Fourier), rfourier (radii Fourier) or tfourier (tangent angle Fourier) analyses. For this workshop, we're only going consider elliptic Fourier analysis (EFA).\  
+Central to Momocs are a specific suite of shape classes for: 1) *outlines* (OutCoo), *open outlines* (OpnCoo) and *landmarks* (LdkCoo), with often one class specific to your own dataset. While some operations in Momocs are generic and do not depend on one of these classes, many functions require your data to be one of these specific 'S3 objects'. In this instance our tps data is comprised of outlines, and so we wish for our data to be `OutCoo`, as to enable efourier (elliptic Fourier) analyses. Other analyses including rfourier (radii Fourier) or tfourier (tangent angle Fourier) analyses can be conducted through this process but for this workshop we're only going consider elliptic Fourier analysis (EFA).\  
 
-The coordinate data (coo) must therefore be turned into outline data through the `Momocs::Out()` function. Once performed, we can then enter the object (here called 'shape') and examine its properties.\      
+Through this lens, the coordinate data (coo) must therefore be turned into outline data through the `Momocs::Out()` function for the workflow to work. Once performed, we can then enter the object (here titled 'shape') and examine its properties.\      
 
 ```{r chunk6, echo=TRUE, eval=TRUE, warning=FALSE}
 shape <- Out(tpsdata$coo, fac = database) # incorporating our database as our factors
 shape # call the object
 ```
-This tells us that in our Out file there are a total of 250 outlines, with a mean number of 1543 landmarks and 10 different factors (longitude, Latitude, Archaeological_Unit, etc.).\    
-  
-  
+This tells us that in our Out file there are a total of 250 outlines, with a mean number of 1543 landmarks and 10 different factors (longitude, Latitude, Archaeological_Unit, etc.). We are only going consider Archaeological_Unit within these factors.\      
+
 ## **GMM Procedure 2: Outline Visualisation**
 
-Now our data is in the R environment, and in the appropriate class required for Momocs, we can examine the outline shapes. We can first look at all outlines through the `Momocs::panel()` function. Factors can also be coloured in using the `fac` argument in `Momocs::panel()`.\   
+Now our data is in the R environment and in the appropriate class required for Momocs, we can examine the outline shapes. We can first look at all outlines through the `Momocs::panel()` function. Factors can also be coloured in using the `fac` argument.\   
 
-An example using the `Momocs::panel()` function is seen in Figure 1.\  
+An example using the `Momocs::panel()` function is seen below.\  
 
-```{r chunk7, echo=TRUE, eval=TRUE, fig.width = 5, fig.height = 5, fig.cap="Showcasing the 'panel' function on all tanged points (colour correspond to different units)"}
+```{r chunk7, echo=TRUE, eval=TRUE, fig.width = 5, fig.height = 5}
 panel(shape, main = "", fac = 'Archaeological_Unit')
 ```
 
-An alternative to the `Momocs::panel()` function is `Momocs::mosaic()`, an updated image function (which will soon replace pane). This does include a legend, unlike the panel function, however the legend drawing options are limited, and are currently being improved for further package versions. We can also draw individual shapes of interest using the `Momocs::coo_plot()` function (Figure 2). A number of aesthetic or stylistic changes (including line colour and fill) are possible.\  
+An alternative to the `Momocs::panel()` function is `Momocs::mosaic()`, an updated display function (which will soon replace panel). This does include a legend, unlike the panel function, however the legend drawing options are limited, and are currently being improved for further package versions.\  
 
-```{r chunk8, echo=TRUE, eval=TRUE, fig.width = 3, fig.height = 3, fig.cap="An individual tanged point (as through the Momocs::coo_plot() function)"}
+We can also draw individual shapes of interest using the `Momocs::coo_plot()` function. A number of aesthetic or stylistic changes (including line colour and fill) are possible.\  
+
+```{r chunk8, echo=TRUE, eval=TRUE, fig.width = 3, fig.height = 3}
 coo_plot(shape[1], col = "grey", main = "Artefact #1") 
 ```
   
 ## **GMM Procedure 3: Outline Normalisation**
 
-Normalisation, as stressed by Claude (2008), has long been an issue in the elliptic Fourier process. Normalisation can be performed through the actual elliptic Foruier transformation (using what is known as the "first ellipse"). It is recommended to normalise (standardise) and align your shapes before the `Momocs::efourier()` process. Rotation was considered before outline digitisation, rotation could also be explored in Momocs through the `Momocs::coo_aligncalliper()` function. Here we will explore three transformation processes: 1) `Momocs::coo_center()`, 2) `Momocs::coo_scale()` and 3) `Momocs::coo_close()`.\  
+Normalisation, as stressed by Claude (2008), has long been an issue in the elliptic Fourier process. Normalisation can be performed through the actual elliptic Foruier transformation (using what is known as the "first ellipse"). As we noted in the first workshop, this process (normalisation and elliptic fitting to coefficients) is equivalent to the Procrustes Superimposition for landmark data./  
 
-These functions do the following:\    
-* `Momocs::coo_center()`: Centres coordinates on a common origin (common centroid).\    
-* `Momocs::coo_scale()`: Scaled the coordinates by their 'scale' (if provided) or centroid size.\    
-* `Momocs::coo_close()`: Closes unclosed shapes (precaution).\    
+It is recommended to normalise (standardise) and align your shapes before the `Momocs::efourier()` process. Rotation was considered before outline digitisation, however rotation could also be explored in Momocs through the `Momocs::coo_aligncalliper()` function. Here we will explore three transformation processes: 1) `Momocs::coo_center()`, 2) `Momocs::coo_scale()` and 3) `Momocs::coo_close()`.\  
 
-We can then use the `Momocs::stack()` function to inspect all outlines, now according to a common centroid and of a common scale (Figure 3):\  
+These three functions perform the following actions:\    
+* `Momocs::coo_center()`: This action centres coordinates on a common origin (common centroid).\    
+* `Momocs::coo_scale()`: This action scales the coordinates by their 'scale' if provided, or centroid size if 'scale is not provided.\    
+* `Momocs::coo_close()`: Closes unclosed shapes (precautionary).\    
+
+We can then use the `Momocs::stack()` function to inspect all outlines, now according to a common centroid and of a common scale:\  
 
 
-```{r chunk9, echo=TRUE, eval=TRUE, message=FALSE, fig.width = 3, fig.height = 3, fig.cap="Normalised outlines of tanged points (n=250)"}
+```{r chunk9, echo=TRUE, eval=TRUE, message=FALSE, fig.width = 5, fig.height = 5}
 shape <- coo_center(shape)
 shape <- coo_scale(shape)
 shape <- coo_close(shape)
@@ -140,30 +145,30 @@ stack(shape, main = "")
   
 ## **GMM Procedure 4: Elliptic Fourier Transformation**
 
-Elliptic Fourier Analysis (EFA) is one of a number of Fourier based methods of curve composition derived from the first series by Jean Baptiste Joseph Fourier (1768-1830), and developed by Giardina and Kuhl (1977) and Kuhl and Giardina (1982). In practice, a set of four parametric equations (grounded on sine and cosine transformations) are used to define the x and y Cartesian landmarks into curves (Fourier harmonic amplitudes). The coefficients (termed A,B,C and D), when summed together, represent the approximation of artefact form. This level of detail depends on the number of harmonics you use. The first harmonic (first ellipse) is responsible for rotation and defines an ellipse in the plane, with which all other harmonics fit onto. The greater the number of harmonics, the greater the level of detail, and the closer the curves resemble the shape. However, a considerable level of statistical noise is produced if there is too much detail, and so an appropriate level of harmonics are necessary.\  
+Elliptic Fourier Analysis (EFA) is one of a number of Fourier based methods of curve composition derived from the first series by Jean Baptiste Joseph Fourier (1768-1830), and developed by Giardina and Kuhl (1977) and Kuhl and Giardina (1982). In practice, a set of four parametric equations (grounded on sine and cosine transformations) are used to define the x and y Cartesian landmarks into curves (Fourier harmonic amplitudes). The coefficients (termed A,B,C and D), when summed together, represent the approximation of artefact form, and are the framework for further analyses. This level of detail depends on the number of harmonics you use. The first harmonic (first ellipse) is responsible for rotation and defines an ellipse in the plane, with which all other harmonics fit onto. The greater the number of harmonics, the greater the level of detail, and the closer the curves resemble the shape. However, a considerable level of statistical noise is produced if there is too much detail (and thus too many harmonics), and so an appropriate level of harmonics are necessary.\  
 
-When a level of harmonic power is determined, a series of procedures can be implemented to test how many harmonics are necessary:\    
-* `Momocs::calibrate_harmonicpower_efourier()`: This estimates the number of harmonics required for the elliptic Fourier process (and all other Fourier processes).\        
+When a level of harmonic power is determined by the researcher (95%, 99%, 99.9%, 99.99%), a series of procedures can be implemented to test how many harmonics are necessary:\    
+* `Momocs::calibrate_harmonicpower_efourier()`: This function estimates the number of harmonics required for the elliptic Fourier process (and all other Fourier processes).\        
 * `Momocs::calibrate_reconstructions_efourier()`: This procedure calculates reconstructed shapes for a series of harmonic numbers. This process best demonstrates the harmonic process.\    
-* `Momocs::calibrate_deviations_efourier`(): Calculate deviations from the original and reconstructed shapes for a series of harmonic numbers.\  
+* `Momocs::calibrate_deviations_efourier`(): This procedure calculates deviations from the original and reconstructed shapes for a series of harmonic numbers.\  
 
 ```{r chunk10, echo=TRUE, eval=TRUE, message=FALSE, warning = FALSE}
 calibrate_harmonicpower_efourier(shape, id = 4, nb.h = 20, plot = FALSE)
 ```
 
-This first procedures highlights how much shape (harmonic power) is represented by the individual harmonics. Typically, the process is performed on all shapes, however one is used here to detail the components obtained from the function.\  
+This first procedures highlights how much shape (harmonic power) is represented by the individual harmonics. Here we assessed it on one example and only considered the first twenty harmonics. Typically, the process is performed on all shapes, however one is used here to detail the components obtained from the function. These three calibrate functions can also take some time to process, please be patient while they load.\  
 
-```{r chunk11, echo=TRUE, eval=TRUE, message=FALSE, warning = FALSE, fig.width = 3, fig.height = 5, fig.cap="Harmonic estimation through the `Momocs::calibrate_reconstructions_efourier() function"}
+```{r chunk11, echo=TRUE, eval=TRUE, message=FALSE, warning = FALSE, fig.width = 3}
 calibrate_reconstructions_efourier(shape)
 ```
 
-This second function (Figure 4) best exemplifies the harmonic concept: as the number of harmonics increase, so the approximation of shape is closer to the digitised artefact.\  
+This second function best exemplifies the harmonic concept: as the number of harmonics increase, so the approximation of shape is closer to the digitised artefact. This function also highlights the elliptic fitting in the first harmonic.\  
 
-```{r chunk12, echo=TRUE, eval=TRUE, message=FALSE, warning = FALSE, fig.width = 8, fig.height = 3, fig.cap="Harmonic estimation through the `Momocs::calibrate_deviations_efourier() function"}
+```{r chunk12, echo=TRUE, eval=TRUE, message=FALSE, warning = FALSE, fig.width = 8}
 calibrate_deviations_efourier(shape)
 ```
 
-The third and final function (Figure 5) provides another means of examining the role of harmonic power on deviation in shape./  
+The third and final function  provides another means of examining the role of harmonic power on deviation in shape.\    
 
 Once we know how many harmonics are required we can use the `Momocs::efourier()` function to generated out OutCoe (outline coefficients) object.\  
 
@@ -171,32 +176,175 @@ Once we know how many harmonics are required we can use the `Momocs::efourier()`
 efashape <- efourier(shape, nb.h = 11, smooth.it = 0, norm = TRUE)
 ```
 
-## **GMM Procedure 5: Exploratory Procedure #1: PCA**
+## **GMM Procedure 5: Principal Component Analysis (PCA)**
 
-With our elliptic fourier coefficients we can now begin the exploratory and analytical procedure. We will start by exploring the main theoretical differences in shape through a Principal Component Analysis (PCA). Please refer to the first workshop for a detailed explanation of PCA. We first need to convert out OutCoe class object to a PCA class object through the `Momocs::PCA()` function. We can then explore the main sources of shape variation through the `Momocs::PCcontrib()` function (Figure 6). The proportion can also be retrieved through calling the `Momocs::Scree()` function.
+With our elliptic fourier coefficients we can now begin the exploratory and analytical procedure. We will start by exploring the main theoretical differences in shape through a Principal Component Analysis (PCA). Please refer to the first workshop for a detailed explanation of PCA. We first need to convert out OutCoe class object to a PCA class object through the `Momocs::PCA()` function. We can then explore the main sources of shape variation through the `Momocs::PCcontrib()` function.\   
 
-```{r chunk14, echo=TRUE, eval=TRUE, message=FALSE, fig.width = 5, fig.height = 7, fig.cap="The first five principal components and their shape variation (measured in standard deviations)"}
+The proportion can also be retrieved through calling the `Momocs::Scree()` function.
+
+```{r chunk14, echo=TRUE, eval=TRUE, message=FALSE, fig.width = 4, fig.height = 3}
 pcashape <- PCA(efashape)
 PCcontrib(pcashape, nax = 1:5)
 
 ```
 
-We can see through this function that Principal Component 1 (PC1), i.e. the main source of shape variation among the tanged points, range from thin tanged points to wider-tanged examples, and that Principal Component 2 (PC2), i.e. the second main source of shape variation, extends from left-exaggerated tangs to right-exaggerated tangs. This function can be set to display as many sources of shape variation as necessary./  
+We can see through this function that Principal Component 1 (PC1), i.e. the main source of shape variation among the tanged points, range from thin tanged points to wider-tanged examples, and that Principal Component 2 (PC2), i.e. the second main source of shape variation, extends from left-exaggerated tangs to right-exaggerated tangs. This function can be set to display as many sources of shape variation as required by the researcher.\    
 
-While we can observe the main changes in artefact shape we are unsure how much variation these components account for. Using the `Momocs::Scree()` function we can find out that PC1 accounts for 57.7% of all shape variation, and that the first two axes account for 74.1% (almost three quarters of all shape variation within our dataset). 95% of all shape variation can be accounted for in the first ten principal components (an observation we will come back to afterwards)./   
+While we can observe the main changes in artefact shape, at present we are unsure how much variation these components account for. Using the `Momocs::Scree()` function we can find out that PC1 accounts for 57.7% of all shape variation, and that the first two axes account for 74.1% (almost three quarters of all shape variation within our dataset). 95% of all shape variation can be accounted for in the first ten principal components (an observation we will come back to afterwards).\     
 
 ```{r chunk15, echo=TRUE, eval=TRUE, message=FALSE}
 scree(pcashape)
 
 ```
 
-Now we know the main sources of shape variation, and the importance of each axis, we can now observe how each tanged point is reflected in the theoretical shape space through the `Momocs::plot_PCA()` function (Figure 7).\  
+Now we know the main sources of shape variation, and the importance of each axis, we can now observe how each tanged point is reflected in the theoretical shape space through the `Momocs::plot_PCA()` function.\     
 
-```{r chunk16, echo=TRUE, eval=TRUE, message=FALSE, fig.width = 7, fig.height = 7, fig.cap="Principal Component Analysis (PCA 1 vs. PCA 2)"}
-plot_PCA(pcashape, f = 'Archaeological_Unit', morphospace_position = "full_axes", zoom = 2, chull = FALSE) %>% layer_points(cex = 1) %>% layer_rug %>% layer_ellipses()
+```{r chunk16, echo=TRUE, eval=TRUE, message=FALSE, fig.width = 7, fig.height = 7}
+plot_PCA(pcashape, axes = c(1,2), ~Archaeological_Unit, morphospace_position = "full_axes", zoom = 2, chull = FALSE) %>% layer_points(cex = 1) %>% layer_ellipses()
 ```
 
+In this diagram we can observe the different distributions of each archaeological unit within the morphospace, and the relative clustering of each unit within this graph. It's important to remember that this graph only represents the first two principal components, we may wish to examine other sources of shape variation (some which may be of importance to archaeologists).\ 
 
+Note: pipes (%>%) are used here to processes multiple arguments at the same time. Momocs supports piping with the whole process able to be 'piped'. For teaching purposes we are doing the 'long way' of GMM.\  
+
+If we wish to examine the relationship between different principal components we can use the `axes` argument to change our graph configuration. For example, if we wish to examine differences in shape between PC1 and PC3 we can specify the `axes` argument in the following way:\  
+
+```{r chunk17, echo=TRUE, eval=TRUE, message=FALSE, fig.width = 7, fig.height = 7}
+plot_PCA(pcashape, axes = c(1,3), ~Archaeological_Unit, morphospace_position = "full_axes", zoom = 2, chull = FALSE) %>% layer_points(cex = 1) %>% layer_ellipses()
+```
+
+There are also a number of other visualisation options including the addition of confidence axes, convex hulls, and morphospace layouts (not explored here).\   
+
+We can also visualise these principal components, and the variance within different archaeological units, in an alternative way, through the `Momocs::boxplot()` function:\  
+
+```{r chunk18, echo=TRUE, eval=TRUE, message=FALSE, fig.width = 9, fig.height = 5}
+boxplot(pcashape, ~Archaeological_Unit, nax = 1:5)
+```
+
+## **GMM Procedure 6: Discriminant Analysis (LDA/CVA)**
+As we highlighted in the first workshop, PCA explores differences in shape variation irrespective of group composition (i.e. *a priori* groupings). Through a discriminant analysis we can examine differences in shape as based on their maximum group seperation (between-group variation in contrast to within-group variation). In Momocs, we use the `Momocs::LDA()` function on either the elliptic Fourier coefficients or the PCA scores to produce our class accuracy, plots and correction scores. There is no correct answer as to which to use, it depends on the data you wish to examine. In using the PCA scores it is possible to retain a number of components that are deemed important, this can be either: 1) the first nth components, 2) the number of components representing a certain level of shape variance (e.g. 95%, 99%, 99.9%), or 3) all principal components. The coefficients, in contrast would encapsulate all shape data.\  
+
+With greater levels of data you may include a degree of statistical importance, with smaller unimportant variables taking precedence, and so an optimal level of data is necessary.\  
+
+When we produced a scree table (the table with documented the percentage variance for each component) we observed that the first ten components defined 95% cumulative shape variance. We can produce a discriminant analysis on just these ten components if we wish.\  
+
+First we create the object:\  
+
+```{r chunk19, echo=TRUE, eval=TRUE, message=FALSE}
+dashape <- LDA(pcashape, ~Archaeological_Unit, retain = 0.95)
+```
+
+We can now examine different aspects of our discriminant analysis data, including the cross-validation table (actual vs. predicted categories for artefacts) and the proportion of correctly classified individuals.\    
+
+```{r chunk20, echo=TRUE, eval=TRUE, message=FALSE}
+dashape$CV.correct
+dashape$CV.ce
+```
+
+When we use the `CV.correct` argument we see that 32.4% of tanged points can be correctly classified. We can examine this in further detail through the `CV.ce` argument.\  
+
+We can see through our classification error table that certain archaeological units are better defined in two-dimensional shape than others e.g. Pitted Ware (Type A), Grensk and Bromme (Western Europe). More detailed metrics are included in the `Momocs::classification_metrics()` function (not covered here).\  
+
+If we wish to visualise our plot, as is common in exploratory procedures we can use the `Momocs::plot_LDA()` function, using similar arguments to `Momocs::plot_PCA()`:\  
+
+```{r chunk21, echo=TRUE, eval=TRUE, message=FALSE, fig.width = 7, fig.height = 7}
+plot_LDA(dashape, axes = c(1,2), zoom = 2, chull = FALSE) %>% layer_points(cex = 1) %>% layer_ellipses()
+```
+
+Here we can see how Pitted Ware (Type A), a control from a different period (but of similar technique) can be differentiated from all other archaeological units.\  
+
+Note: for the elliptic Fourier coefficient discriminant analysis it is relatively straight forward to impose the shapes onto the graph using the `layer_morphospace_LDA()` argument.\  
+
+## **GMM Procedure 7: Multiple Analysis of Variance (MANOVA)**
+
+So far we have explored the differences in shape within the whole group of artefacts and explored how well they can be seperated through their group variance. Now we need to test, within an statistical framework, whether there is a difference in the PC scores (representative of shape) within and between the different archaeological units. A MANOVA will be our required test given we have multiple groups and multiple column data (PC scores).\  
+
+Once we have chosen a desired alpha level as of marker of difference (that is to say the boundary with which we are able to reject the null hypothesis of same populations) e.g. 0.05 we can use the `Momocs::MANOVA()` function, noting "Archaeological_Unit" to be our factor which we want to consider:\  
+
+```{r chunk22, echo=TRUE, eval=TRUE, message=FALSE}
+MANOVA(pcashape, ~Archaeological_Unit, retain = 0.95)
+```
+
+Note how we are still using 95% cumulative shape variance as represented by our principal component scores. Once we perform the MANOVA we can see that the null hypothesis is rejected as the p value is below the 0.05 level (or any of the other significance levels). We can examine this in finer detail through pair-wise MANOVA analyses, using the `Momocs::MANOVA_PW()` function:\  
+
+```{r chunk23, echo=TRUE, eval=TRUE, message=FALSE}
+MANOVA_PW(pcashape, ~Archaeological_Unit, retain = 0.95)
+```
+
+This rather large amount of information provides the p values for each combination of archaeological units and depicts level of significance in star form. In terms of analysis this data highlights, as previously the degree to which specific archaeological units can be distinguished from others in terms of their two-dimensional outline shape.\  
+
+## **GMM Procedure 8: Hierarchical Cluster Analysis and K-Means**
+
+We can now use the elliptic Fourier coefficients and PCA data to examine, irrespective of previous groupings, how similar objects relate to one another within the overall set of examples. The endpoint is a set of clusters, where each cluster is distinct from each other cluster, and the objects within each cluster are broadly similar i.e. of similar shape. This can be done through two different methods in Momocs: Hierarchical Cluster Analysis (through its various subcategories), where the structure is provided, or through a K-Means analysis where partitions the shapes into k groups.\  
+
+To perform a Hierarchical Cluster Analysis we can use the `Momocs::CLUST()` function, a wrapper of `stats::dist()` and `stats::hclust()`. We can specify what type of shape we wish for our tree to be using the `type` argument (horizontal as default), and the specific `hclust` (complete as default) and `dist_method` (euclidean as default). Again, we can retain the number of PCA scores we find suitable or use the elliptic Fourier coefficients.\  
+
+```{r chunk24, echo=TRUE, eval=TRUE, message=FALSE, fig.width = 7, fig.height = 7}
+CLUST(pcashape, ~Archaeological_Unit, dist_method = "euclidean", hclust_method = "complete", k = 4, retain = 0.95)
+```
+
+Using the `k` argument, I've also specified what the best four groupings would be. We can also modify the aesthetic further through arguments in the tidyverse.\   
+
+```{r chunk25, echo=TRUE, eval=TRUE, message=FALSE, fig.width = 7, fig.height = 7}
+CLUST(pcashape, ~Archaeological_Unit, dist_method = "euclidean", hclust_method = "complete", k = 4, retain = 0.95) + theme_gray()
+```
+
+Alternatively we can use the `Momocs::KMEANS()` function to derive four groups from the data.\  
+
+```{r chunk27, echo=TRUE, eval=TRUE, message=FALSE, fig.width = 7, fig.height = 7}
+KMEANS(pcashape, centers = 4)
+```
+
+If more computationally-intensive tree-building exercises were investigated we could explore the principal components through **maxiumum likelihood** in the `RPhylip` package (this requires the Phylip software to be installed on a computer already). All these trees can also be imported into the `ggtree` for full customisation, or analysed for their structures (phylogenetic or otherwise) in the `ape` package.\  
+
+
+## **GMM Procedure 9: Constructing Mean Shapes**
+
+If we wish, we can retrieve mean shapes for a provided factor (e.g. "Archaeological_Unit"), using the elliptic Fourier coefficients or PCA scores. This is done through the `Momocs::MSHAPES()` function with the object first being made.\   
+
+```{r chunk28, echo=TRUE, eval=TRUE, message=FALSE}
+meanshapes <- MSHAPES(efashape, ~Archaeological_Unit)
+```
+
+The `Momocs::plot_MSHAPES()` function is particularly useful for displaying the mean shapes for all the archaeological units and the visualisation of different configurations of mean shapes.\  
+
+```{r chunk29, echo=TRUE, eval=TRUE, message=FALSE, fig.width = 8, fig.height = 8}
+plot_MSHAPES(meanshapes, size = 0.75)
+```
+
+## **GMM Procedure 10: Further Work: Incorporating Size...**
+
+In this example we have so far only examined shape, however we still have size data (as all images have a scale). From this we can extract various different measures including length or symmetry through the `Momocs::coo_length()` option (noting that the converted value is pixels!).\  
+
+Centroid size is perhaps the best measure of size, incorporating the distance from all points of interest in relation to the shape. This can be extracted from the original shape data, using the `Momocs::coo_centsize()` function. We can then take this data and the principal component scores, and merge them into one database. There are a variety of ways this can be done, this is just one example.\    
+
+```{r chunk30, echo=TRUE, eval=TRUE, message=FALSE}
+centroidsize <- as_tibble(coo_centsize(shape))
+centroidsize <- rename(centroidsize, cs = "value")
+pcascores <- as_tibble(pcashape$x)
+databasedata <- cbind(database,centroidsize, pcascores)
+
+head(databasedata)
+```
+
+We can now explore these through regression and correlation based analyses. For example, using the ggplot functions we can create a scatter plot and add a regression line (these functions will be detailed by Prof. Ben Marwick in a forthcoming workshop).\  
+
+```{r chunk31, echo=TRUE, eval=TRUE, message=FALSE}
+ggplot(databasedata, aes(PC1, cs)) + geom_point(size = 2, pch = 16, alpha = 0.4, colour = "#E69F00", fill = "#ffd475") + geom_smooth(method=lm, se=FALSE) + theme(text = element_text(size=8), axis.text = element_text(size = 8)) + xlab("Principal Component 1") + ylab("CS (Centroid Size)")
+```
+
+We can then perform a correlation (and test) using the `cor` and `cor.test` functions:\  
+
+```{r chunk32, echo=TRUE, eval=TRUE, message=FALSE}
+cor(databasedata$PC1, databasedata$cs)
+cor.test(databasedata$PC1, databasedata$cs)
+```
+
+## **Concluding Remarks**
+
+This workshop was designed to highlight how geometric morphometrics (outline analysis) can be examined for archaeological material in the R Environment, from data importing to visualisation and analysis. It is worth stressing that Momocs is only one of a number of packages in the R Environment, and the methods showcased here are only one way (and one style) of conducting GMM. Landmark analysis can be incorporated into Momocs but there are a number of functions in `Geomorph` which are particularly impressive and powerful. Similarly, a number of other packages have been referenced throughout this workflow. Only through exploring the packages and their functions will you be able understand what workflow works best for your research question and process.\  
+
+If there are any questions please feel free to contact me: C.S.Hoggard@soton.ac.uk\  
 
 ## References ##
 
