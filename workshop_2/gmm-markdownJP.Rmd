@@ -1,0 +1,522 @@
+---
+title: '**Archaeological Geometric Morphometrics and R／考古学における幾何形体測定学とR**'
+author: "Dr Christian Steven Hoggard (University of Southampton, United Kingdom)"
+subtitle: 'As part of the #StayHomeButStudy Workshop Series'
+output:
+  pdf_document:
+       latex_engine: xelatex 
+  html_document: default
+  word_document: default
+documentclass: bxjsarticle
+classoption: xelatex,ja=standard
+geometry: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+Sys.setlocale("LC_ALL","English") #Windowsにおけるエンコード問題解決用
+```
+
+## **Introduction**
+
+This guide provides a "hands-on" step-by-step introduction into the application of geometric morphometric (GMM) methodologies in archaeological science, as conducted the R Environment. Using a published dataset this workflow will guide the reader through four key GMM procedures: 1) data importing (and creation), 2) data transformation, 3) data analysis and 4) data visualisation. A Japanese translation of this documentation is also provided.\  
+
+これは、R環境下における考古学のための幾何形態測定学（GMM）の方法を、ステップ・バイ・ステップで学ぶハンズオン・ワークショップの実習ガイドです．このガイドは，公表されているデータセットを利用して，読者にGMMの4つの重要な手順：1)データ読み込み（作成），2)データ変換，3)分析，4)可視化を紹介します。\
+
+I will first demonstrate the actions or functions on Zoom (using this markdown document) and then allow time for all participants to run the function (3-5 minutes per function). To run a 'chunk', a shaded area of function we can press the "Run selected chunk" button, represented by a play button or use the shortcut `ctrl + enter`. Should there be any queries then please let us know in the Slack workspace. Conversely, when you complete a function please could you use a "thumbs up" emoji on Slack. We are allowing time between functions to ensure that all participants keep up, if you finish a particular process early explore the functions in the packages through the 'Help' tab in the 'Packages' window.\  
+
+ワークショップでは，このRマークダウン資料を使用して，最初にZoomでコードの動作・関数を実演し，その後で3～5分ほどみなさんにも実行してもらいます．マークダウンの中で灰色の背景の範囲が実行可能なコードの「チャンク」です．チャンクの右上の再生ボタンをクリックするか，またはショートカット `ctrl + enter` で実行できます．疑問・質問があると思うので，その際はSlackのこのワークショップのチャンネルに書き込んでください．問題なく実行できた人は，Zoomで「いいね」のリアクションをしてください．参加者全員が，コードの実行を確認する時間があります．慌てないでください．また，早く確認できた人は，RStudioの右下のPackageペインのパッケージ・ライブラリ名をクリックすると関数のヘルプを見ることができるので，それらをご覧になっていてください．\
+
+This practical constitutes the second workshop of the #StayHomeButStudy event, organised by Dr. Atsushi Noguchi, and is tailored  for Japanese archaeologists, researchers and enthusiasts.\  
+
+この実習は，野口　淳，クリスチャン・ホガード，ベン・マーウィックが主催する#StayHomebutStudyオンライン・ワークショップの第2回を構成するものであり，日本の考古学者、研究者、愛好家のために準備されたものである．\
+
+### **About the Code, Packages and Data／コード・パッケージ・データについて**
+
+The data used throughout this guide originates from Ivanovaitė et al (2020): *"All these Fantastic Cultures? Research History and Regionalization in the Late Palaeolithic Tanged Point Cultures of Eastern Europe"*, published in open-access in the European Journal of Archaeology (https://doi.org/10.1017/eaa.2019.59). The data can be found on a GitHub repository (https://github.com/CSHoggard/-Eastern-Europe-Tanged-Points), in addition to the Open Science Framework (https://osf.io/agrwb/).\  
+
+このワークショップで使用されるデータは，Ivanovaitė et al (2020)「これらの考古学的文化はなにか? 東ヨーロッパ後期旧石器時代の剥片尖頭器文化をめぐる研究史と地域性」『ヨーロッパ考古学』（オープンアクセス）で公表されたものです(https://doi.org/10.1017/eaa.2019.59)．同論文のオリジナルデータはGitHubリポジトリ，(https://github.com/CSHoggard/-Eastern-Europe-Tanged-Points)およびOSFリポジトリ(https://osf.io/agrwb/)でも公開されています．\
+
+All code, and data, including the markdown document (in HTML and PDF format) for this practical can be found on GitHub (https://github.com/CSHoggard/-japanworkshop2020tree/master/workshop_2).\  
+
+この実習で用いるすべてのコード，データ，マークダウン文書（HTMLとPDFフォーマットを含む）は，GitHub上のワークショップのリポジトリで公開されています．\
+
+The GMM procedure detailed below is grounded on two-dimensional outline analysis. In conducting outline analysis for this practical the following two packages are necessary:  
+
+ここで実行するGMMの方法は，2Dのアウトライン分析です．下記の2つのパッケージ（および付随してインポートされるパッケージ群）を必要とします．\    
+
+* **Momocs** (Version 1.3.0) https://cran.r-project.org/web/packages/Momocs/index.html   
+* **tidyverse** (Version 1.3.0) https://cran.r-project.org/web/packages/tidyverse/index.html 
+## **Software Installation／ソフトウェアのインストール**
+
+Following the installation of R and RStudio, we can now install the required packages:\  
+
+RおよびRStudioのインストールに続き、必要なパッケージをインストールします：\
+
+```{r chunk1, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+if(!require("Momocs")) install.packages('Momocs', repos='http://cran.us.r-project.org')  # Momocsのチェックとインストール  
+if(!require("tidyverse")) install.packages('tidyverse', repos='http://cran.us.r-project.org')  #tidyverseのチェックとインストール  
+if(!require("rio")) install.packages('rio', repos='http://cran.us.r-project.org')  #rioのチェックとインストール  
+```
+
+As the tidyverse and Momocs packages may take time to install given the size of the files *please ensure that these are downloaded prior the workshop*.\  
+
+tidyverseとMomocsパッケージの読み込みは，ファイルサイズの大きさから多少時間がかかるかも知れません．*できる限りワークショップの開始前にダウンロードしてください*．\
+
+To bring the data (from Github) into R/Rstudio we can use the `import` function from the `rio` package, and extract the data from the repository:\   
+
+R/RStudioにデータをダウンロードする際には `rio`  パッケージの `import` ファンクション（関数）を使用して，GitHubリポジトリからデータを抽出することができます：\
+
+```{r}
+database <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_2/database.rds")  #GitHubリポジトリの遺跡・資料データをdatabaseへ読み込み  
+
+tpsdata <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_2/tpslines.rds")   #GitHubリポジトリのtpsアウトラインデータをtpsdataへ読み込み
+```
+
+Once installed, the packages can be activated through the `library()` function:  
+
+一度インストールされたパッケージは，`library()` 関数によってアクティベートされます:    
+
+```{r chunk2, echo=TRUE, eval=TRUE, message=FALSE}
+library(Momocs)  #Momocsのアクティベート
+library(tidyverse)  #tidyverseのアクティベート  
+```
+
+## **About the Data／データについて**  
+
+This data was composed to assess the robustness of cultural taxonomies in the Final Palaeolithic period of Eastern Europe, as portrayed through tanged point variants. It consists of 250 tanged point outlines and produced in the TPS Suite (https://life.bio.sunysb.edu/morph/soft-dataacq.html), using the **outline object** function. As this dataset was produced in the TPS Suite the file format is **.tps**. In their composition these outlines are semilandmarks, an algorithm-produced series of equidistant points are each shape. A database of all examples and their respective cultural assignment is also provided.\  
+
+このデータは，東ヨーロッパの晩期旧石器時代における考古学的文化の分類のロバストネス（頑健性）を，剥片尖頭器のバリエーションから評価するために作成されました．250点の剥片尖頭器のアウトラインデータで，TPS Suite(https://life.bio.sunysb.edu/morph/soft-dataacq.html)の*outline object* 関数を使用して作成しました．ファイルフォーマットは *.tps* です．アウトラインは，アルゴリズムによって生成された等間隔の点群セミランドマークとして構成されています．すべての資料の詳細，その考古学的文化の帰属もデータベース化されています．\
+
+## **Importing GMM Data: Alternative Approaches**  
+
+There are a number of ways which landmark and outline morphometric data can be imported into the R Environment. Here, for ease and replicability, the outline data (in .tps format) was stored on a GitHub repository and directly fed into the R environment, utilising the `Momocs::import_tps()` function in a .rds file. Other ways to import .tps data (if saved locally) include the above function, `geomorph::readland.tps()` and rewriting tools in Momocs e.g. `Momocs::rw_rule()`. Data from stereomorph can also be imported through the `Momocs::import_StereoMorph_ldk()` and `Momocs:import_StereoMorph_curve()` functions.\    
+
+Note: for the purpose of this workshop I will detail in-text the function and its constitutent package e.g. `geomorph::readland.tps()`, however only the function is what will be 'used' so-to-speak e.g. `readland.tps()`. This helps you to understand what packages the functions originate from.  
+
+Within Momocs, outlines can be extracted from silhouette data through the `Momocs::import_jpg()` and `Momocs::import_jpg1()` functions. See their respective helpfiles for more details on these functions. These will be demonstrated at the end of the workshop.\  
+
+## **Examining the Data／データの検証**
+
+With our data now in the R Environment we can now call our tpsdata object through the `base:: View` functions. The `base::View()` function will highlight the three constituent parts of the tps file: the 1) *Coo* (coordinate data), 2) *cur* (the curve data if necessary), and 3) *scale* (the scale data if present). It is the Coo and scale data which we will take forward, with the database, to examine shape variation among our tanged points. It is best not to call the tps data as R will stream all coordinate data for each example.\  
+We can also inspect our database using the `head()` function, and examine the different components of our dataset.\  
+
+Rに読み込んだtpsデータは，`base:: View` 関数で呼び出し，表示できます。`base:: View()` 関数は，tpsの3種類の要素：1) *Coo* (座標データ)，2) *cur* (曲線：必要な場合)，3) *scale* (縮尺：記録されている場合)を表示します．今回は，Cooとscaleデータを，データベースとともに，剥片尖頭器の「かたち」の多様性を検証するために使用します．ただしtpsの，たとえば座標データをすべて呼び出す必要はありません．\
+また，`head()` 関数を使ってデータベースを確認し，データセットの異なる部分を検証することもできます．\
+
+```{r chunk3, echo=TRUE, eval=TRUE}
+head(database)  #databaseの先頭数行を呼び出す
+```
+  
+We can observe that the group data we want to examine (Archaeological_Unit) is `<chr>`, that is to say of type 'character', and not `<fctr>` ('factor'), as required for our analysis. This can be corrected through the `base::as_factor()`function and confirmed through the `base::is_factor()` function:  
+
+表示されたデータベースでは，検証したい 'Archaeological_Unit` (考古学的単位(文化))のデータ型が `<chr>` と表示されています． `<chr>` はデータが文字列型であることを示し，分析対象となる`<fctr>` つまり因子型ではありません．そこで `base::as_factor()` 関数で因子型に修正し，`base::is_factor()`
+ 関数で確認することができます(結果が[1]TRUEと返されればOK)．
+ 
+```{r chunk4, echo=TRUE, eval=TRUE}
+database$Archaeological_Unit <- as.factor(database$Archaeological_Unit)  #Archaeological_Unitを因子型(factor)に変更
+
+is.factor(database$Archaeological_Unit) # check to see the data is now of type 'character'／データが文字列(character)かどうかを確認
+```
+  
+We can also inspect the number of different archaeological units within our dataset through the `base::summary()` function. This highlights the number of tanged points in each group. With certain taxonomic units rarely used this is reflected in the low sample sizes for certain groups e.g. Vyshegorian.\     
+
+`base::summary()` を使い，考古学的文化ごとに含まれる資料数を確認できます．これは，考古学的に文化ごとの，データベースに含まれる剥片尖頭器の数です．たとえばVyshegorian文化のサンプル数が少ないことからも分かる通り，剥片尖頭器は稀な型式です．\
+
+```{r chunk5, echo=TRUE, eval=TRUE}
+summary(database$Archaeological_Unit) #Archaeological_Unitを集計
+```
+
+## **GMM Procedure 1: Outline File Creation／GMMの実行1：アウトライン・ファイルの作成**
+
+Central to Momocs are a specific suite of shape classes for: 1) *outlines* (OutCoo), *open outlines* (OpnCoo) and *landmarks* (LdkCoo), with often one class specific to your own dataset. While some operations in Momocs are generic and do not depend on one of these classes, many functions require your data to be one of these specific 'S3 objects'. In this instance our tps data is comprised of outlines, and so we wish for our data to be `OutCoo`, as to enable efourier (elliptic Fourier) analyses. Other analyses including rfourier (radii Fourier) or tfourier (tangent angle Fourier) analyses can be conducted through this process but for this workshop we're only going consider elliptic Fourier analysis (EFA).\  
+
+Momocsパッケージの中心となるのは，特定の「かたち」のクラスです．それらは，*(閉じた)アウトライン* (OutCoo)，*閉じていない(開いた)アウトライン* (OpenCoo)と *ランドマーク* (LdkCoo) で，多くの場合，データセットはひとつのクラスで構成されています．Momocsの機能のいくつかは，（ジェネリックな関数なので）「かたち」データのクラスに依拠せず実行できますが，多くの関数は「S3オブジェクト」として特定のクラスに対して実行することになります．ここでは，tpsデータはアウトラインなので，楕円フーリエ(efourier)分析を行なうための `OutCoo` として扱います．そのほかの半径フーリエ(rfourier)分析や，タンジェント・フーリエ(tfourier)分析も同じ手順で実施できますが，ここでは楕円フーリエ分析(EFA)のみを取り扱います．\
+
+Through this lens, the coordinate data (coo) must therefore be turned into outline data through the `Momocs::Out()` function for the workflow to work. Once performed, we can then enter the object (here titled 'shape') and examine its properties.\      
+
+この「レンズ」を通して，今回のワークフローに即して`Momocs::Out()` 関数により座標データ(coo)はアウトラインデータに変換されます．これを実行すると，'shape'と命名したオブジェクトにアウトラインデータが格納され，その属性(プロパティ)を分析できるようになります．\
+
+```{r chunk6, echo=TRUE, eval=TRUE, warning=FALSE}
+shape <- Out(tpsdata$coo, fac = database) # incorporating our database as our factors／tps座標データをアウトラインに変換し，データベースの因子型データArchaeological_unitとともにshapeに格納  
+shape # call the object／オブジェクトの呼び出し
+```
+This tells us that in our Out file there are a total of 250 outlines, with a mean number of 1543 landmarks and 10 different factors (longitude, Latitude, Archaeological_Unit, etc.). We are only going consider Archaeological_Unit within these factors.\      
+
+137行目のコードでshapeオブジェクトを呼び出すと，Out関数で，平均して1543のランドマークと10の異なる分析可能な因子型データ(経度，緯度，考古学的文化など)を含む，合計250のアウトラインが取り出され格納されたことが分かります．今回は，このうち考古学的文化(Archaeological_Unit)だけを検討の対象とします．\
+
+## **GMM Procedure 2: Outline Visualisation／GMMの実行2：アウトラインの可視化**
+
+Now our data is in the R environment and in the appropriate class required for Momocs, we can examine the outline shapes. We can first look at all outlines through the `Momocs::panel()` function. Factors can also be coloured in using the `fac` argument.\   
+
+ここまでで，データがRに取り込まれ，Momocsが要求するクラスが与えられたので，いよいよ「かたち」のアウトラインを検証できます．まずはじめに `Momocs::panel()` 関数で，すべてのアウトラインを見てみましょう．`fac` 引数により因子型データ(ここでは考古学的文化)の種別に色分けすることもできます．\
+
+An example using the `Momocs::panel()` function is seen below.\  
+
+`Momocs::panel()` 関数の使い方の一例を挙げます．\
+
+```{r chunk7, echo=TRUE, eval=TRUE, fig.width = 5, fig.height = 5}
+panel(shape, main = "", fac = 'Archaeological_Unit')  #「かたち」のデータを，考古学的文化ごとに色分けして可視化  
+```
+
+An alternative to the `Momocs::panel()` function is `Momocs::mosaic()`, an updated display function (which will soon replace panel). This does include a legend, unlike the panel function, however the legend drawing options are limited, and are currently being improved for further package versions.\  
+
+`Momocs::panel()` 関数の代わりに `Momocs::mosaic()` 関数を使用することもできます．これはアップデートされた関数で，`panel()` 関数に取って代わるでしょう．\
+
+We can also draw individual shapes of interest using the `Momocs::coo_plot()` function. A number of aesthetic or stylistic changes (including line colour and fill) are possible.\  
+
+`Momocs::coo_plot()` 関数で，個別資料の「かたち」を描画することもできます．線の色や塗りつぶしなどの表現の変更も可能です．\
+
+```{r chunk8, echo=TRUE, eval=TRUE, fig.width = 3, fig.height = 3}
+coo_plot(shape[1], col = "grey", main = "Artefact #1")   # 資料1(shape[1])の「かたち」を灰色に塗りつぶして表示する，col=""で色の指定，main=""はキャプション  
+```
+  
+## **GMM Procedure 3: Outline Normalisation／GMMの実行3：アウトラインの正規化**
+
+Normalisation, as stressed by Claude (2008), has long been an issue in the elliptic Fourier process. Normalisation can be performed through the actual elliptic Foruier transformation (using what is known as the "first ellipse"). As we noted in the first workshop, this process (normalisation and elliptic fitting to coefficients) is equivalent to the Procrustes Superimposition for landmark data./  
+
+Claude (2008) が強調する通り，正規化は長い間EFAの課題でした．正規化は，「第1楕円」を使用する楕円フーリエ変換により行うことができます．第1回ワークショップで指摘したとおり，このプロセス（正規化と係数の楕円フィッティング）は，ランドマークのプロクラステス重ね合わせと同義です．\
+
+It is recommended to normalise (standardise) and align your shapes before the `Momocs::efourier()` process. Rotation was considered before outline digitisation, however rotation could also be explored in Momocs through the `Momocs::coo_aligncalliper()` function. Here we will explore three transformation processes: 1) `Momocs::coo_center()`, 2) `Momocs::coo_scale()` and 3) `Momocs::coo_close()`.\  
+
+「かたち」の正規化(標準化)と整列は，MomocsでのEFAの実施(`Momocs::efourier()`)の前に行なうべきです．向き(回転)は，アウトラインのデジタル化の前に考慮すべきですが，`Momocs::coo_aligncalliper()` 関数で実施することも可能です．ここでは，以下の3つの変換の過程を行ないます．それらは，1) `Momocs::coo_center()`，2) `Momocs::coo_scale()`，3) `Momocs::coo_close()`です．\
+
+These three functions perform the following actions:\    
+
+これらは，以下のように動作します：\
+
+* `Momocs::coo_center()`: This action centres coordinates on a common origin (common centroid).\    
+    共通の基準点(セントロイド＝重心)に揃える
+* `Momocs::coo_scale()`: This action scales the coordinates by their 'scale' if provided, or centroid size if 'scale is not provided.\    
+    スケールが与えられている場合はそれに従って，そうでない場合はセントロイド・サイズによって揃えます．\
+* `Momocs::coo_close()`: Closes unclosed shapes (precautionary).\    
+    輪郭が閉じていないアウトラインを閉曲線にします(EFAは閉曲線にしか適用できないので，エラーを出さない用心のため)\
+
+We can then use the `Momocs::stack()` function to inspect all outlines, now according to a common centroid and of a common scale:\  
+
+セントロイドとスケールを揃えた結果は， `Momocs::stack()` 関数を使用して確認することができます．\
+
+```{r chunk9, echo=TRUE, eval=TRUE, message=FALSE, fig.width = 5, fig.height = 5}
+shape <- coo_center(shape)  # 基準点を揃える  
+shape <- coo_scale(shape)  #　スケールを揃える  
+shape <- coo_close(shape)  # 開曲線を閉じる  
+
+stack(shape, main = "")　　# shapeの重ね合わせ表示
+```
+  
+## **GMM Procedure 4: Elliptic Fourier Transformation／GMMの実行4：楕円フーリエ変換**
+
+Elliptic Fourier Analysis (EFA) is one of a number of Fourier based methods of curve composition derived from the first series by Jean Baptiste Joseph Fourier (1768-1830), and developed by Giardina and Kuhl (1977) and Kuhl and Giardina (1982). In practice, a set of four parametric equations (grounded on sine and cosine transformations) are used to define the x and y Cartesian landmarks into curves (Fourier harmonic amplitudes). The coefficients (termed A,B,C and D), when summed together, represent the approximation of artefact form, and are the framework for further analyses. This level of detail depends on the number of harmonics you use. The first harmonic (first ellipse) is responsible for rotation and defines an ellipse in the plane, with which all other harmonics fit onto. The greater the number of harmonics, the greater the level of detail, and the closer the curves resemble the shape. However, a considerable level of statistical noise is produced if there is too much detail (and thus too many harmonics), and so an appropriate level of harmonics are necessary.\  
+
+EFAは，J.B.ジョセフ.フーリエ (仏：1786~1830)による「フーリエ変換」の方法のひとつで，Giardina&Kuhl(1977)およびKuhl&Giardina(1982)により発展されました．実際には，サイン・コサイン変換にもとづく4つのパラメトリック方程式の集合により，xy直交座標系のランドマークを，フーリエ調和振動によって曲線に当てはめます．係数A,B,C,Dを合計が対象資料の形態の近似を表し，さらなる分析の基礎となります．近似の度合いは，採用するハーモニクス(調和)数に依ります．第1調和(第1楕円)は，対象資料の向き(回転)に対応した楕円で，より高次の調和がそこに当てはめられます．調和数が増加し，詳細さが増大すると，曲線は「かたちに近づきます．しかし，調査数が大き過ぎ，詳細さが過剰になると統計的に考慮すべきレベルのノイズが発するので，適当なレベルの調和数が必要となります．\
+
+When a level of harmonic power is determined by the researcher (95%, 99%, 99.9%, 99.99%), a series of procedures can be implemented to test how many harmonics are necessary:\
+
+95%, 99%, 99.9%, 99.99%というように調和度のレベルを決定したら，以下の手順で必要な調和数をテストできます．\
+
+* `Momocs::calibrate_harmonicpower_efourier()`: This function estimates the number of harmonics required for the elliptic Fourier process (and all other Fourier processes).\        
+    楕円フーリエ変換(およびその他のすべてのフーリエ変換)に必要な調和数を推定します．\    
+* `Momocs::calibrate_reconstructions_efourier()`: This procedure calculates reconstructed shapes for a series of harmonic numbers. This process best demonstrates the harmonic process.\    
+    各調和数により再現される「かたち」を計算します．調和のプロセスをよく表します．\
+* `Momocs::calibrate_deviations_efourier`(): This procedure calculates deviations from the original and reconstructed shapes for a series of harmonic numbers.\  
+    調和数ごとに，資料のオリジナルの「かたち」と再現された「かたち」の偏差を計算します．\
+
+```{r chunk10, echo=TRUE, eval=TRUE, message=FALSE, warning = FALSE}
+calibrate_harmonicpower_efourier(shape, id = 4, nb.h = 20, plot = FALSE)  #資料番号4(id=4)の調和数を20まで(nb.h=20)推定
+```
+
+This first procedures highlights how much shape (harmonic power) is represented by the individual harmonics. Here we assessed it on one example and only considered the first twenty harmonics. Typically, the process is performed on all shapes, however one is used here to detail the components obtained from the function. These three calibrate functions can also take some time to process, please be patient while they load.\  
+
+ここでは，個別の調和によってどの程度「かたち」および調和度が代表されるかが示されます．1点の資料について1～20の調和数を検討しています．典型的には，この過程は全資料に対して実施しますが，ここでは関数の実行で得られる結果を詳しく見るために，1点だけ実施しました．これら3つの過程は，処理時間が多少かかりますので，完了まで少し待ってください．\
+
+```{r chunk11, echo=TRUE, eval=TRUE, message=FALSE, warning = FALSE, fig.width = 10}
+calibrate_reconstructions_efourier(shape)  # shapeの復元を計算  
+```
+
+This second function best exemplifies the harmonic concept: as the number of harmonics increase, so the approximation of shape is closer to the digitised artefact. This function also highlights the elliptic fitting in the first harmonic.\  
+
+これは調和(ハーモニクス)の概念をよく示している関数です．調和数が増加すると，(計算結果による)「かたち」は実際にデジタル化された資料の「かたち」に近似していきます．\
+
+```{r chunk12, echo=TRUE, eval=TRUE, message=FALSE, warning = FALSE, fig.width = 8}
+calibrate_deviations_efourier(shape)  # オリジナルと計算結果の「かたち」の偏差を計算  
+
+```
+
+The third and final function  provides another means of examining the role of harmonic power on deviation in shape.\  
+
+3つ目の関数は，「かたち」の偏差における調和度の役割を検討する別の手段です．\
+
+Once we know how many harmonics are required we can use the `Momocs::efourier()` function to generated out OutCoe (outline coefficients) object.\  
+
+どれだけの調和を利用すべきか分かったら， `Momocs::efourier()` 関数が対象資料のOutCoe(アウトライン係数)を生成します．\
+
+```{r chunk13, echo=TRUE, eval=TRUE, message=FALSE}
+efashape <- efourier(shape, nb.h = 11, smooth.it = 0, norm = TRUE)  # shapeのアウトライン係数を第11調和まで計算しefashapeに格納    
+```
+
+## **GMM Procedure 5: Principal Component Analysis (PCA)／GMMの実行5：主成分分析(PCA)**
+
+With our elliptic fourier coefficients we can now begin the exploratory and analytical procedure. We will start by exploring the main theoretical differences in shape through a Principal Component Analysis (PCA). Please refer to the first workshop for a detailed explanation of PCA. We first need to convert out OutCoe class object to a PCA class object through the `Momocs::PCA()` function. We can then explore the main sources of shape variation through the `Momocs::PCcontrib()` function.\   
+
+楕円フーリエ係数によって，探索と分析を開始することができるようになりました．ここでは主成分分析(PCA)によって「かたち」の主要な理論的差異を検討したいと思います．PCAの詳細な説明については，第1回ワークショップを思い出してください．まずOutCoe(アウトライン係数)クラス・オブジェクトを，`Momocs::PCA()` 関数によって，PCAクラス・オブジェクトに変換する必要があります．これにより，`Momocs::PCcontrib()` 関数を使用して，「かたち」の変異の主な要素を探索することができるようになります．\
+
+The proportion can also be retrieved through calling the `Momocs::Scree()` function.\
+
+`Momocs::Scree()` 関数を使用して，(主成分の)割合を取得することも可能です．\
+
+```{r chunk14, echo=TRUE, eval=TRUE, message=FALSE, fig.width = 4, fig.height = 3}
+pcashape <- PCA(efashape)  #EFAの結果をPCAクラスに変換しpcashapeに格納
+PCcontrib(pcashape, nax = 1:5)  #EFAの主成分分析結果を第1～第5主成分軸まで計算表示  
+
+```
+
+We can see through this function that Principal Component 1 (PC1), i.e. the main source of shape variation among the tanged points, range from thin tanged points to wider-tanged examples, and that Principal Component 2 (PC2), i.e. the second main source of shape variation, extends from left-exaggerated tangs to right-exaggerated tangs. This function can be set to display as many sources of shape variation as required by the researcher.\    
+
+この関数の実施により，第1主成分軸(PC1)，つまり剥片尖頭器の「かたち」の変異の主な要素を，細いもの(SDマイナス側)から幅広いもの(同プラス側)
+へという変化として，また「かたち」の変異の2番目に主要な要素としてのPC2を，左に凸から右に凸な基部(茎部)への変化として理解することができます．この関数は，必要な限りいくつでも「かたち」の変異の要素を示すことができます(nax=1:xのxを大きくする)．\
+
+While we can observe the main changes in artefact shape, at present we are unsure how much variation these components account for. Using the `Momocs::Scree()` function we can find out that PC1 accounts for 57.7% of all shape variation, and that the first two axes account for 74.1% (almost three quarters of all shape variation within our dataset). 95% of all shape variation can be accounted for in the first ten principal components (an observation we will come back to afterwards).\     
+
+このように資料の「かたち」の主要な変化を観察することができますが，この時点では，これらの変異がどれだけ資料の組み合わせ全体を説明しているか定かではありません．そこで `Momocs::Scree()` 関数を使用することで，PC1が全ての「かたち」の変異の57.7%を説明し，またPC1+PC2が74.1%，すなわちデータセット全体の3/4を説明することを確認できます．そしてPC1～PC10により，全体の95%が説明されます．この点については，のちにまた触れます．\
+
+```{r chunk15, echo=TRUE, eval=TRUE, message=FALSE}
+scree(pcashape)  #pcashapeの各主成分軸の寄与度を計算  
+
+```
+
+Now we know the main sources of shape variation, and the importance of each axis, we can now observe how each tanged point is reflected in the theoretical shape space through the `Momocs::plot_PCA()` function.\
+
+ここまでで，「かたち」の変異のおもな要素と各主成分軸の重要度を確認し，`Momocs::plot_PCA()` 関数によってそれぞれの剥片尖頭器が理論的な形状空間にどのように反映されるかを見ることができます．\
+
+```{r chunk16, echo=TRUE, eval=TRUE, message=FALSE, fig.width = 7, fig.height = 7}
+plot_PCA(pcashape, axes = c(1,2), ~Archaeological_Unit, morphospace_position = "full_axes", zoom = 2, chull = FALSE) %>% layer_points(cex = 1) %>% layer_ellipses()  #PC1+PC2による考古学的文化により色分けした散布図を描画  
+```
+
+In this diagram we can observe the different distributions of each archaeological unit within the morphospace, and the relative clustering of each unit within this graph. It's important to remember that this graph only represents the first two principal components, we may wish to examine other sources of shape variation (some which may be of importance to archaeologists).\ 
+
+このグラフでは，それぞれの考古学的文化(に帰属する資料が)，形状空間の中で異なった分布を示していることが確認できます．なお，このグラフでは，PC1とPC2しか反映されていないことに注意しておく必要があります．「かたち」の変異のほかの要素が，考古学者にとって重要なものかもしれないので，それらも検討した方が良いでしょう．\
+
+Note: pipes (%>%) are used here to processes multiple arguments at the same time. Momocs supports piping with the whole process able to be 'piped'. For teaching purposes we are doing the 'long way' of GMM.\  
+
+注：ここではパイプ演算子(%>%)は，同時に異なる引数を実行するために使用しています．Momocsは，パイプ演算子によりすべてのプロセスを「つなぐ」ことが可能です．\
+
+If we wish to examine the relationship between different principal components we can use the `axes` argument to change our graph configuration. For example, if we wish to examine differences in shape between PC1 and PC3 we can specify the `axes` argument in the following way:\  
+
+異なる主成分軸間の関係を検討したい場合には，`plot_PCA()` 関数中の `axes` 引数を決定します．たとえば，PC1とPC3の関係を検討したい時には，次のようにします：\
+
+```{r chunk17, echo=TRUE, eval=TRUE, message=FALSE, fig.width = 7, fig.height = 7}
+plot_PCA(pcashape, axes = c(1,3), ~Archaeological_Unit, morphospace_position = "full_axes", zoom = 2, chull = FALSE) %>% layer_points(cex = 1) %>% layer_ellipses()  #PC1+PC3 (axes=c(1,3))による考古学的文化により色分けした散布図を描画  
+```
+
+There are also a number of other visualisation options including the addition of confidence axes, convex hulls, and morphospace layouts (not explored here).\   
+
+ほかにも，信頼軸や凸包，形状空間のレイアウトの追加など，可視化・グラフ描画のさまざまなオプションがありますがここでは触れません．\
+
+We can also visualise these principal components, and the variance within different archaeological units, in an alternative way, through the `Momocs::boxplot()` function:\  
+
+また，`Momocs::boxplot()` 関数により，各主成分におけるの異なる考古学的文化ごとの分散を可視化することもできます．\
+
+```{r chunk18, echo=TRUE, eval=TRUE, message=FALSE, fig.width = 9, fig.height = 5}
+boxplot(pcashape, ~Archaeological_Unit, nax = 1:5)  # pcashapeの考古学的文化ごとの箱ひげ図を描画  
+```
+
+## **GMM Procedure 6: Discriminant Analysis (LDA/CVA)／GMMの実行6：判別分析(LDA/CVA)**
+As we highlighted in the first workshop, PCA explores differences in shape variation irrespective of group composition (i.e. *a priori* groupings). Through a discriminant analysis we can examine differences in shape as based on their maximum group seperation (between-group variation in contrast to within-group variation). In Momocs, we use the `Momocs::LDA()` function on either the elliptic Fourier coefficients or the PCA scores to produce our class accuracy, plots and correction scores. There is no correct answer as to which to use, it depends on the data you wish to examine. In using the PCA scores it is possible to retain a number of components that are deemed important, this can be either: 1) the first nth components, 2) the number of components representing a certain level of shape variance (e.g. 95%, 99%, 99.9%), or 3) all principal components. The coefficients, in contrast would encapsulate all shape data.\  
+
+第1回ワークショップで取り上げたように，PCAはあらかじめ設定された分類・グループに関係なく，「かたち」の変異を検討します．判別分析を使用すると，「かたち」の差異を，グループ間の変異に対するグループ内の変異にもとづく分離の最大化にもとづいて検討することができます．Momocsでは，`Momocs::LDA()` 関数により，楕円フーリエ係数またはPCAスコアを利用して，私たちの考古学的分類の精確さを検討することができます．どの方法を使えばよいかの正しい答えはありません．検討したいデータによります．PCAスコアを使用する際には，重要と考えられるいくつかの成分を利用できますが，それらは，1)最初のn番目の成分，2)95%,99%,99.9%といった確実なレベルで「かたち」の変異を代表する成分，3)すべての主成分，のどれでも可能です．対照的に，係数はすべての形状データをカプセル化します．\
+
+With greater levels of data you may include a degree of statistical importance, with smaller unimportant variables taking precedence, and so an optimal level of data is necessary.\  
+
+データのサイズが大きくなると統計的に重要度の高い変数を含めることができますが，小さいときには重要でない変数が優先されるので，最適なデータのサイズが必要です。 \
+
+
+When we produced a scree table (the table with documented the percentage variance for each component) we observed that the first ten components defined 95% cumulative shape variance. We can produce a discriminant analysis on just these ten components if we wish.\  
+
+特徴量の表(各成分の分散パーセンテージを示した表)では、第1～第10成分が95%の累積的な「かたち」の分散を定めていることが確認できました。必要であれば，これらの10成分で判別分析を行うことができます．\
+
+
+First we create the object:\  
+
+まずオブジェクトを作成します:\
+
+```{r chunk19, echo=TRUE, eval=TRUE, message=FALSE}
+dashape <- LDA(pcashape, ~Archaeological_Unit, retain = 0.95)  # pcashapeと「考古学的文化」に対し線形判別分析を実施，dashapeに格納  
+```
+
+We can now examine different aspects of our discriminant analysis data, including the cross-validation table (actual vs. predicted categories for artefacts) and the proportion of correctly classified individuals.\  
+
+これにより，実際の資料と想定された分類間の交差検証(クロスバリデーション)表など，判別分析データの異なる様相を検討できます．\
+
+```{r chunk20, echo=TRUE, eval=TRUE, message=FALSE}
+dashape$CV.correct  #dashapeを交差検証  
+dashape$CV.ce  #交差検証表を作成
+```
+
+When we use the `CV.correct` argument we see that 32.4% of tanged points can be correctly classified. We can examine this in further detail through the `CV.ce` argument.\  
+
+`CV.correct`引数によって，全資料のうち32.4%の剥片尖頭器が「正しく」分類されていた(判別分析により主成分分析によるグルーピングと「考古学的文化」が一致していた)ことを確認できます．その詳細を，'CV.ce' 引数によって検証できます(全体ではなく．考古学的文化ごとの交差検証)．\
+
+We can see through our classification error table that certain archaeological units are better defined in two-dimensional shape than others e.g. Pitted Ware (Type A), Grensk and Bromme (Western Europe). More detailed metrics are included in the `Momocs::classification_metrics()` function (not covered here).\  
+
+この分類の誤差の表にもとづいて，いくつかの「考古学的文化」―たとえばPitted Ware(Type A)やGrensk，西欧Bromme文化などは他の考古学的文化に比べて，剥片尖頭器の2Dの「かたち」によってよく定義されていることを確認できます．より詳細な測定は，`Momocs::classification_metrics()` 関数で実施できますが，ここでは取り上げません．\
+
+If we wish to visualise our plot, as is common in exploratory procedures we can use the `Momocs::plot_LDA()` function, using similar arguments to `Momocs::plot_PCA()`:\  
+
+この結果を散布図に描画するには，`Momocs::plot_PCA()` と同じ引数を使う，`Momocs::plot_LDA()` 関数を共通する手順として使用することができます．\
+
+```{r chunk21, echo=TRUE, eval=TRUE, message=FALSE, fig.width = 7, fig.height = 7}
+plot_LDA(dashape, axes = c(1,2), zoom = 2, chull = FALSE) %>% layer_points(cex = 1) %>% layer_ellipses()  # dashapeの線形判別分析の結果を散布図として描画  
+```
+
+Here we can see how Pitted Ware (Type A), a control from a different period (but of similar technique) can be differentiated from all other archaeological units.\  
+
+この散布図から，時期が異なるが同じ技法を用いているPitted Ware (Type A)が，以下にほかの考古学的文化と異なっているかを確認できます．\
+
+Note: for the elliptic Fourier coefficient discriminant analysis it is relatively straight forward to impose the shapes onto the graph using the `layer_morphospace_LDA()` argument.\  
+
+楕円フーリエ係数の判別分析のために，`layer_morphospace_LDA()` 引数を使用したグラフに「かたち」を重ね合わせることは比較的容易です．\
+
+## **GMM Procedure 7: Multiple Analysis of Variance (MANOVA)／GMMの実行7：多変量分散分析(MANOVA)**
+
+So far we have explored the differences in shape within the whole group of artefacts and explored how well they can be seperated through their group variance. Now we need to test, within an statistical framework, whether there is a difference in the PC scores (representative of shape) within and between the different archaeological units. A MANOVA will be our required test given we have multiple groups and multiple column data (PC scores).\  
+
+ここまで，対象資料全体の「かたち」の差異と，それがグループの分散によりどのように区分されるのかを検討してきました．続いて，統計学的な枠組みにおいて，考古学的文化内あるいは文化間において，「かたち」を代表する主成分スコアに差異があるのかどうかを検証する必要があります．MANOVAは，複数の分類群とPCスコアのような複数列のデータを検証するのに適しています．\
+
+Once we have chosen a desired alpha level as of marker of difference (that is to say the boundary with which we are able to reject the null hypothesis of same populations) e.g. 0.05 we can use the `Momocs::MANOVA()` function, noting "Archaeological_Unit" to be our factor which we want to consider:\  
+
+差異の示標として期待されるアルファ・レベル，つまり同一母集団に対する帰無仮説を棄却することができる境界として，たとえば0.05を選ぶと，「考古学的文化」を検討する因子として`Momocs::MANOVA()` 関数を使用することができます．\
+
+```{r chunk22, echo=TRUE, eval=TRUE, message=FALSE}
+MANOVA(pcashape, ~Archaeological_Unit, retain = 0.95)  # pcashapeと「考古学的文化」のMANOVAを実施    
+```
+
+Note how we are still using 95% cumulative shape variance as represented by our principal component scores. Once we perform the MANOVA we can see that the null hypothesis is rejected as the p value is below the 0.05 level (or any of the other significance levels). We can examine this in finer detail through pair-wise MANOVA analyses, using the `Momocs::MANOVA_PW()` function:\  
+
+ここでは，主成分スコアで表される95%累積形状分散をまだ使用していることに注目してください．MANOVAを実行したところ，p値が0.05レベル（または他の有意水準のいずれか）を下回っていたため，帰無仮説が棄却されていることがわかります．これをより詳細に調べるには，`Momocs::MANOVA_PW()` 関数を用いて，ペアワイズ法MANOVA分析を行うとよいでしょう．\
+
+```{r chunk23, echo=TRUE, eval=TRUE, message=FALSE}
+MANOVA_PW(pcashape, ~Archaeological_Unit, retain = 0.95)  #ペアワイズ法MANOVAを実施  
+```
+
+This rather large amount of information provides the p values for each combination of archaeological units and depicts level of significance in star form. In terms of analysis this data highlights, as previously the degree to which specific archaeological units can be distinguished from others in terms of their two-dimensional outline shape.\  
+
+この大量の情報は，各考古学文化間のp値を示し，有意水準を*(アスタリスク)で示しています．分析の観点から，このデータが，先に述べたように特定の考古学的文化が，そ子に含まれる剥片尖頭器の2Dのアウトラインの「かたち」によって他の文化とどの程度区別できるかを示しています。 \
+
+## **GMM Procedure 8: Hierarchical Cluster Analysis and K-Means／GMMの実行8：階層的クラスター分析とk-means法**
+
+We can now use the elliptic Fourier coefficients and PCA data to examine, irrespective of previous groupings, how similar objects relate to one another within the overall set of examples. The endpoint is a set of clusters, where each cluster is distinct from each other cluster, and the objects within each cluster are broadly similar i.e. of similar shape. This can be done through two different methods in Momocs: Hierarchical Cluster Analysis (through its various subcategories), where the structure is provided, or through a K-Means analysis where partitions the shapes into k groups.\  
+
+楕円フーリエ係数とPCAデータを，従来の分類に関係なく，類似した資料が，対象資料全体の中でどのように相互に関連しているかを検証するために利用できます．その結果は，各クラスターが他のクラスターから区別され，また各クラスター内の資料が大まかに類似している、つまり類似した「かたち」でとなるクラスターの集合として示されます．これは，Momocsでは2つの異なる方法で行うことができます．多様なサブカテゴリを用いた階層的クラスター分析と、「かたち」をk個のグループに分割するK-Means法です。 \
+
+
+To perform a Hierarchical Cluster Analysis we can use the `Momocs::CLUST()` function, a wrapper of `stats::dist()` and `stats::hclust()`. We can specify what type of shape we wish for our tree to be using the `type` argument (horizontal as default), and the specific `hclust` (complete as default) and `dist_method` (euclidean as default). Again, we can retain the number of PCA scores we find suitable or use the elliptic Fourier coefficients.\  
+
+階層型クラスター分析を行うには，`stats::dist()` と `stats::hclust()` を含む `Momocs::CLUST()` 関数を用います．引数 `type` (デフォルトは水平) と，個別の `hclust` (デフォルトは完全) と `dist_method` (デフォルトはユークリッド) を用いて，クラスター樹形図をどのような形状にするか指定できます．ここでも適切と思われるPCAスコアの数を保持するか，楕円フーリエ係数を使用することができます．\
+
+
+```{r chunk24, echo=TRUE, eval=TRUE, message=FALSE, fig.width = 10, fig.height = 7}
+CLUST(pcashape, ~Archaeological_Unit, dist_method = "euclidean", hclust_method = "complete", k = 4, retain = 0.95)  # pcashapeと「考古学的文化」によるクラスター樹形図，ユークリッド法，クラスター数=4  
+```
+
+Using the `k` argument, I've also specified what the best four groupings would be. We can also modify the aesthetic further through arguments in the tidyverse.\   
+
+`k` 引数を使って，最もよく分類-結合される4つのグループを特定しました．tidyverseの引数を利用して，見た目を変更することもできます．\
+
+```{r chunk25, echo=TRUE, eval=TRUE, message=FALSE, fig.width = 10, fig.height = 7}
+CLUST(pcashape, ~Archaeological_Unit, dist_method = "euclidean", hclust_method = "complete", k = 4, retain = 0.95) + theme_gray()  # 背景をtheme_greyに変更  
+```
+
+Alternatively we can use the `Momocs::KMEANS()` function to derive four groups from the data.\  
+
+また，'Momocs::KMEANS()` 関数を使い，データを群に分類することもできます．\
+
+```{r chunk27, echo=TRUE, eval=TRUE, message=FALSE, fig.width = 7, fig.height = 7}
+KMEANS(pcashape, centers = 4)  # クラスター中心(分離数)を4としてk-means法を実施  
+```
+
+If more computationally-intensive tree-building exercises were investigated we could explore the principal components through **maxiumum likelihood** in the `RPhylip` package (this requires the Phylip software to be installed on a computer already). All these trees can also be imported into the `ggtree` for full customisation, or analysed for their structures (phylogenetic or otherwise) in the `ape` package.\  
+
+もし、より計算量の多い樹形図を作成したいのであれば、`RPhylip`パッケージの**最尤法**を使って主成分を探索することができます．そのためには `Phylip` パッケージをインストールする必要があります．これらの樹形図はすべて，`ggtree`にインポートしてカスタマイズしたり，`ape`パッケージで構造が系統的かどうかを分析したりすることができます．\
+
+## **GMM Procedure 9: Constructing Mean Shapes／GMMの実行9：平均的な「かたち」の構築**
+
+If we wish, we can retrieve mean shapes for a provided factor (e.g. "Archaeological_Unit"), using the elliptic Fourier coefficients or PCA scores. This is done through the `Momocs::MSHAPES()` function with the object first being made.\   
+
+もし必要ならば，楕円フーリエ係数またはPCAスコアを用いて「考古学的文化」のような因子として平均的「かたち」を取得することもできます．これまでに作成したオブジェクトを用いて，`Momocs::MSHAPES()` 関数を使用できます．\
+
+```{r chunk28, echo=TRUE, eval=TRUE, message=FALSE}
+meanshapes <- MSHAPES(efashape, ~Archaeological_Unit)  # efashapeと「考古学的文化」により平均的「かたち」を取得しmeanshapesに格納  
+```
+
+The `Momocs::plot_MSHAPES()` function is particularly useful for displaying the mean shapes for all the archaeological units and the visualisation of different configurations of mean shapes.\  
+
+`Momocs::plot_MSHAPES()` 関数は，すべての考古学的文化の平均的「かたち」の表示と，平均的「かたち」の異なる構成の視覚化に便利です．\
+
+```{r chunk29, echo=TRUE, eval=TRUE, message=FALSE, fig.width = 8, fig.height = 8}
+plot_MSHAPES(meanshapes, size = 0.75)  # meanshapesを描画，左下～右上中央が個別の「考古学的文化」の剥片尖頭器の平均的「かたち」
+```
+
+## **GMM Procedure 10: Further Work: Incorporating Size...**
+
+In this example we have so far only examined shape, however we still have size data (as all images have a scale). From this we can extract various different measures including length or symmetry through the `Momocs::coo_length()` option (noting that the converted value is pixels!).\  
+
+ここまで「かたち」のみを調べてきましたが，すべての元画像にはスケールがあるので，データセットにはサイズもあります．このデータから，`Momocs::coo_length()` オプションを使って，長さや対称性を含む様々な尺度を抽出することができます（ただし変換された値はピクセル単位であることに注意！）．
+
+Centroid size is perhaps the best measure of size, incorporating the distance from all points of interest in relation to the shape. This can be extracted from the original shape data, using the `Momocs::coo_centsize()` function. We can then take this data and the principal component scores, and merge them into one database. There are a variety of ways this can be done, this is just one example.\    
+
+セントロイド・サイズは，おそらく最も優れたサイズの尺度であり，形状に関連する注目すべき点からの距離が組み込まれています．`Momocs::coo_centsize()` 関数を用いて，オリジナルの「かたち」データから抽出することが可能です．このサイズのデータと主成分スコアを取り出して，一つのデータベースに統合することができます．これには様々な方法がありますが，ここでは一例を示します．   
+
+```{r chunk30, echo=TRUE, eval=TRUE, message=FALSE}
+centroidsize <- as_tibble(coo_centsize(shape))  # shapeの外形のセントロイド・サイズを行列にしてcentroidsizeに格納  
+centroidsize <- rename(centroidsize, cs = "value")  #データ行列内のcs列を数値型に変換  
+pcascores <- as_tibble(pcashape$x)  # pcashapeのxを行列にしてpcascoresに格納  
+databasedata <- cbind(database,centroidsize, pcascores)  # database, centroidosize, pcascoresを連結してdatabasedataに格納  
+
+head(databasedata)  #databasedataの先頭6行を表示  
+```
+
+We can now explore these through regression and correlation based analyses. For example, using the ggplot functions we can create a scatter plot and add a regression line (these functions will be detailed by Prof. Ben Marwick in a forthcoming workshop).\  
+
+さらに相関-回帰分析も実施できます．例えば，ggplot関数を使って散布図を作成したり，回帰直線を追加したりすることができます．これらの関数については、Ben Marwick教授が今後のワークショップで詳しく説明します． \
+
+
+```{r chunk31, echo=TRUE, eval=TRUE, message=FALSE}
+ggplot(databasedata, aes(PC1, cs)) + geom_point(size = 2, pch = 16, alpha = 0.4, colour = "#E69F00", fill = "#ffd475") + geom_smooth(method=lm, se=FALSE) + theme(text = element_text(size=8), axis.text = element_text(size = 8)) + xlab("Principal Component 1") + ylab("CS (Centroid Size)")  # PC1とセントロイドサイズの散布図を描画し回帰直線を追加  
+```
+
+We can then perform a correlation (and test) using the `cor` and `cor.test` functions:\  
+
+次に、 `cor` `cor.test` 関数を用いて相関の確認と検証を行なえます．\
+
+```{r chunk32, echo=TRUE, eval=TRUE, message=FALSE}
+cor(databasedata$PC1, databasedata$cs)  #PC1とセントロイドサイズの相関  
+cor.test(databasedata$PC1, databasedata$cs)  #同上を検証  
+```
+
+## **Concluding Remarks／まとめ**
+
+This workshop was designed to highlight how geometric morphometrics (outline analysis) can be examined for archaeological material in the R Environment, from data importing to visualisation and analysis. It is worth stressing that Momocs is only one of a number of packages in the R Environment, and the methods showcased here are only one way (and one style) of conducting GMM. Landmark analysis can be incorporated into Momocs but there are a number of functions in `Geomorph` which are particularly impressive and powerful. Similarly, a number of other packages have been referenced throughout this workflow. Only through exploring the packages and their functions will you be able understand what workflow works best for your research question and process.\  
+
+このワークショップでは，データのインポートから可視化，解析まで、Rを使用した考古学資料の幾何形態測定学(アウトライン分析)をどのように行なうのかを紹介しました．ただし，ここで紹介した方法は，GMMを実施するための一つの方法（そして一つのスタイル）に過ぎないことを強調しておきたいと思います．ランドマーク分析はMomocsに組み込むことができますが，`Geomorph`にも印象的で強力な関数がいくつかあります．また，今回のワークフローを通して，Momocs以外のパッケージも参照しました．これらのパッケージとその機能を探求することで，あなたの研究課題や研究プロセスに最も適しているワークフローを見つけ出すことができるでしょう．\
+
+If there are any questions please feel free to contact me: C.S.Hoggard@soton.ac.uk\ 
+
+もし何か質問があれば，気兼ねなくC.S.Hoggard@soton.ac.ukまでメールしてください．\
+
+## References／参考文献 ##
+
+For literature pertaining to outline analysis see／アウトライン分析について:\
+* Claude, J. (2008). *Morphometrics with R*. Springer Publishing.\
+* Bonhomme, V., Picq, S., Gaucherel, C., & Claude, J. (2014). Momocs: Outline analysis using R. *Journal of Statistical Software*, 56: 1-24.\
+* Caple, J., Byrd, J., & Stephan, C. N. (2017). Elliptical Fourier analysis: Fundamentals, applications, and value for forensic anthropology. *International Journal of Legal Medicine*, 131 (6): 1675-1690.\
+* Ferson, S., Rohlf, F. J., & Koehn, R. K. (1985). Measuring shape variation of two-dimensional outlines. *Systematic Zoology*, 34 (1): 59-68.\
+* Kuhl, F. P., & Giardina, C. R. (1982). Elliptic Fourier features of a closed contour. *Computer Graphics and Image Processing*, 18 (3): 236-258.\
+* Yoshioka, Y. (2004). Analysis of petal shape variation of Primula sieboldii by elliptic fourier descriptors and principal component analysis. *Annals of Botany*, 94 (5), 657-664.\
+* Zahn, C. T., & Roskies, R. Z. (1972). Fourier descriptors for plane closed curves. *IEEE Transactions on Computers*, C-21 (3): 269-281.\  
+
+For literature pertaining to GMM by the author (including code and data) see／講師の業績:\    
+* Hoggard, C.S., Lauridsen, L. and Witte, K.B. (2019). The Potential of Geometric Morphometrics for Danish Archaeology: Two Case Studies. *Arkaeologisk Forum*, 40:  30-42. (http://www.archaeology.dk/16738/Nr.%2040%20-%202019).  OSF: https://osf.io/en5d2/.\    
+* Hoggard, C.S., McNabb, J. and Cole, J.N. (2019). The application of elliptic Fourier analysis in understanding biface shape and symmetry through the British Acheulean. *Journal of Paleolithic Archaeology*, 2 (2): 115-133. (https://doi.org/10.1007/s41982-019-00024-6). OSF: https://osf.io/td92j/.\  
+* Ivanovaite, L., Swertka, K., Hoggard, C.S., Sauer, F. and Riede, F. (2020). All these fantastic cultures? Research history and regionalisation in the Late Palaeolithic tanged point cultures of Eastern Europe. *European Journal of Archaeology*. (https://doi.org/10.1017/eaa.2019.59).  OSF: https://osf.io/agrwb/.\  
+* Vestergaard, C. and Hoggard, C.S. (2019). A Novel Geometric Morphometric (GMM) Application to the Study of Bronze Age Tutuli. *Danish Journal of Archaeology*, 8: 5-28. (https://tidsskrift.dk/dja/article/view/112494/164318).  OSF: https://osf.io/fcp43/.\     
+* Riede, F., Hoggard, C.S. and Shennan, S. (2019). Reconciling material cultures in archaeology with genetic data requires robust cultural evolutionary taxonomies. *Nature: Palgrave Communications*, 5 (1): 55. (https://doi.org/10.1057/s41599-019-0260-7). OSF: https://osf.io/vtdf2/. 
