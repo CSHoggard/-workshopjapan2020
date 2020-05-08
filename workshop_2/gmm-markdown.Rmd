@@ -22,13 +22,14 @@ This practical constitutes the second workshop of the #StayHomeButStudy event, o
 
 ### **About the Code, Packages and Data**
 
-The data used throughout this guide originates from Ivanovait?? et al (2020): *"All these Fantastic Cultures? Research History and Regionalization in the Late Palaeolithic Tanged Point Cultures of Eastern Europe"*, published in open-access in the European Journal of Archaeology (https://doi.org/10.1017/eaa.2019.59). The data can be found on a GitHub repository (https://github.com/CSHoggard/-Eastern-Europe-Tanged-Points), in addition to the Open Science Framework (https://osf.io/agrwb/).\  
+The data used throughout this guide originates from Ivanovaitė et al (2020): *"All these Fantastic Cultures? Research History and Regionalization in the Late Palaeolithic Tanged Point Cultures of Eastern Europe"*, published in open-access in the European Journal of Archaeology (https://doi.org/10.1017/eaa.2019.59). The data can be found on a GitHub repository (https://github.com/CSHoggard/-Eastern-Europe-Tanged-Points), in addition to the Open Science Framework (https://osf.io/agrwb/).\  
 
 All code, and data, including the markdown document (in HTML and PDF format) for this practical can be found on GitHub (https://github.com/CSHoggard/-japanworkshop2020tree/master/workshop_2).\  
 
 The GMM procedure detailed below is grounded on two-dimensional outline analysis. In conducting outline analysis for this practical the following two packages are necessary:  
 * **Momocs** (Version 1.3.0) https://cran.r-project.org/web/packages/Momocs/index.html   
 * **tidyverse** (Version 1.3.0) https://cran.r-project.org/web/packages/tidyverse/index.html 
+
 ## **Software Installation**
 
 Following the installation of R and RStudio, we can now install the required packages:\  
@@ -162,10 +163,10 @@ This first procedures highlights how much shape (harmonic power) is represented 
 calibrate_reconstructions_efourier(shape)
 ```
 
-This second function best exemplifies the harmonic concept: as the number of harmonics increase, so the approximation of shape is closer to the digitised artefact. This function also highlights the elliptic fitting in the first harmonic.\  
+This second function best exemplifies the harmonic concept: as the number of harmonics increase, so the approximation of shape is closer to the digitised artefact.  It is important to note that your results may vary as this function considers a random artefact within the Out object. This function also highlights the elliptic fitting in the first harmonic.\  
 
 ```{r chunk12, echo=TRUE, eval=TRUE, message=FALSE, warning = FALSE, fig.width = 8}
-calibrate_deviations_efourier(shape)
+calibrate_deviations_efourier(shape, id = 4)
 ```
 
 The third and final function  provides another means of examining the role of harmonic power on deviation in shape.\    
@@ -350,12 +351,12 @@ If there are any questions please feel free to contact me: C.S.Hoggard@soton.ac.
 
 For literature pertaining to outline analysis see:\
 * Claude, J. (2008). *Morphometrics with R*. Springer Publishing.\
-* Bonhomme, V., Picq, S., Gaucherel, C., & Claude, J. (2014). Momocs: Outline analysis using R. *Journal of Statistical Software*, 56: 1???24.\
-* Caple, J., Byrd, J., & Stephan, C. N. (2017). Elliptical Fourier analysis: Fundamentals, applications, and value for forensic anthropology. *International Journal of Legal Medicine*, 131 (6): 1675???1690.\
-* Ferson, S., Rohlf, F. J., & Koehn, R. K. (1985). Measuring shape variation of two-dimensional outlines. *Systematic Zoology*, 34 (1): 59???68.\
-* Kuhl, F. P., & Giardina, C. R. (1982). Elliptic Fourier features of a closed contour. *Computer Graphics and Image Processing*, 18 (3): 236???258.\
-* Yoshioka, Y. (2004). Analysis of petal shape variation of Primula sieboldii by elliptic fourier descriptors and principal component analysis. *Annals of Botany*, 94 (5), 657???664.\
-* Zahn, C. T., & Roskies, R. Z. (1972). Fourier descriptors for plane closed curves. *IEEE Transactions on Computers*, C-21 (3): 269???281.\  
+* Bonhomme, V., Picq, S., Gaucherel, C., & Claude, J. (2014). Momocs: Outline analysis using R. *Journal of Statistical Software*, 56: 1-24.\
+* Caple, J., Byrd, J., & Stephan, C. N. (2017). Elliptical Fourier analysis: Fundamentals, applications, and value for forensic anthropology. *International Journal of Legal Medicine*, 131 (6): 1675-1690.\
+* Ferson, S., Rohlf, F. J., & Koehn, R. K. (1985). Measuring shape variation of two-dimensional outlines. *Systematic Zoology*, 34 (1): 59-68.\
+* Kuhl, F. P., & Giardina, C. R. (1982). Elliptic Fourier features of a closed contour. *Computer Graphics and Image Processing*, 18 (3): 236-258.\
+* Yoshioka, Y. (2004). Analysis of petal shape variation of Primula sieboldii by elliptic fourier descriptors and principal component analysis. *Annals of Botany*, 94 (5), 657-664.\
+* Zahn, C. T., & Roskies, R. Z. (1972). Fourier descriptors for plane closed curves. *IEEE Transactions on Computers*, C-21 (3): 269-281.\  
 
 For literature pertaining to GMM by the author (including code and data) see:\    
 * Hoggard, C.S., Lauridsen, L. and Witte, K.B. (2019). The Potential of Geometric Morphometrics for Danish Archaeology: Two Case Studies. *Arkaeologisk Forum*, 40:  30-42. (http://www.archaeology.dk/16738/Nr.%2040%20-%202019).  OSF: https://osf.io/en5d2/.\    
