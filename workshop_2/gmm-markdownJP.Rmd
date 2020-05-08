@@ -12,6 +12,8 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+Sys.setlocale("LC_ALL","English") #Windowsにおけるエンコード問題解決用
+
 ## **Introduction**
 
 This guide provides a "hands-on" step-by-step introduction into the application of geometric morphometric (GMM) methodologies in archaeological science, as conducted the R Environment. Using a published dataset this workflow will guide the reader through four key GMM procedures: 1) data importing (and creation), 2) data transformation, 3) data analysis and 4) data visualisation. A Japanese translation of this documentation is also provided.\  
@@ -126,37 +128,51 @@ summary(database$Archaeological_Unit) #Archaeological_Unitを集計
 
 Central to Momocs are a specific suite of shape classes for: 1) *outlines* (OutCoo), *open outlines* (OpnCoo) and *landmarks* (LdkCoo), with often one class specific to your own dataset. While some operations in Momocs are generic and do not depend on one of these classes, many functions require your data to be one of these specific 'S3 objects'. In this instance our tps data is comprised of outlines, and so we wish for our data to be `OutCoo`, as to enable efourier (elliptic Fourier) analyses. Other analyses including rfourier (radii Fourier) or tfourier (tangent angle Fourier) analyses can be conducted through this process but for this workshop we're only going consider elliptic Fourier analysis (EFA).\  
 
-Momocsパッケージの中心となるのは，特定の「かたち」のクラス(分類)です．それらは，*(閉じた)アウトライン* (OutCoo)，*閉じていない(開いた)アウトライン* (OpenCoo)と *ランドマーク* (LdkCoo) で，多くの場合，
+Momocsパッケージの中心となるのは，特定の「かたち」のクラスです．それらは，*(閉じた)アウトライン* (OutCoo)，*閉じていない(開いた)アウトライン* (OpenCoo)と *ランドマーク* (LdkCoo) で，多くの場合，データセットはひとつのクラスで構成されています．Momocsの機能のいくつかは，（ジェネリックな関数なので）「かたち」データのクラスに依拠せず実行できますが，多くの関数は「S3オブジェクト」として特定のクラスに対して実行することになります．ここでは，tpsデータはアウトラインなので，楕円フーリエ(efourier)分析を行なうための `OutCoo` として扱います．そのほかの半径フーリエ(rfourier)分析や，タンジェント・フーリエ(tfourier)分析も同じ手順で実施できますが，ここでは楕円フーリエ分析(EFA)のみを取り扱います．\
 
 Through this lens, the coordinate data (coo) must therefore be turned into outline data through the `Momocs::Out()` function for the workflow to work. Once performed, we can then enter the object (here titled 'shape') and examine its properties.\      
 
+この「レンズ」を通して，今回のワークフローに即して`Momocs::Out()` 関数により座標データ(coo)はアウトラインデータに変換されます．これを実行すると，'shape'と命名したオブジェクトにアウトラインデータが格納され，その属性(プロパティ)を分析できるようになります．\
+
 ```{r chunk6, echo=TRUE, eval=TRUE, warning=FALSE}
-shape <- Out(tpsdata$coo, fac = database) # incorporating our database as our factors
-shape # call the object
+shape <- Out(tpsdata$coo, fac = database) # incorporating our database as our factors／tps座標データをアウトラインに変換し，データベースの因子型データArchaeological_unitとともにshapeに格納  
+shape # call the object／オブジェクトの呼び出し
 ```
 This tells us that in our Out file there are a total of 250 outlines, with a mean number of 1543 landmarks and 10 different factors (longitude, Latitude, Archaeological_Unit, etc.). We are only going consider Archaeological_Unit within these factors.\      
 
-## **GMM Procedure 2: Outline Visualisation**
+137行目のコードでshapeオブジェクトを呼び出すと，Out関数で，平均して1543のランドマークと10の異なる分析可能な因子型データ(経度，緯度，考古学的文化など)を含む，合計250のアウトラインが取り出され格納されたことが分かります．今回は，このうち考古学的文化(Archaeological_Unit)だけを検討の対象とします．\
+
+## **GMM Procedure 2: Outline Visualisation／GMMの実行2：アウトラインの可視化**
 
 Now our data is in the R environment and in the appropriate class required for Momocs, we can examine the outline shapes. We can first look at all outlines through the `Momocs::panel()` function. Factors can also be coloured in using the `fac` argument.\   
 
+ここまでで，データがRに取り込まれ，Momocsが要求するクラスが与えられたので，いよいよ「かたち」のアウトラインを検証できます．まずはじめに `Momocs::panel()` 関数で，すべてのアウトラインを見てみましょう．`fac`で宣言することで，因子型データ(ここでは考古学的文化)の種別に色分けすることもできます．\
+
 An example using the `Momocs::panel()` function is seen below.\  
 
+`Momocs::panel()` 関数の使い方の一例を挙げます．\
+
 ```{r chunk7, echo=TRUE, eval=TRUE, fig.width = 5, fig.height = 5}
-panel(shape, main = "", fac = 'Archaeological_Unit')
+panel(shape, main = "", fac = 'Archaeological_Unit')  #「かたち」のデータを，考古学的文化ごとに色分けして可視化  
 ```
 
 An alternative to the `Momocs::panel()` function is `Momocs::mosaic()`, an updated display function (which will soon replace panel). This does include a legend, unlike the panel function, however the legend drawing options are limited, and are currently being improved for further package versions.\  
 
+`Momocs::panel()` 関数の代わりに `Momocs::mosaic()` 関数を使用することもできます．これはアップデートされた関数で，`panel()` 関数に取って代わるでしょう．
+
 We can also draw individual shapes of interest using the `Momocs::coo_plot()` function. A number of aesthetic or stylistic changes (including line colour and fill) are possible.\  
 
+`Momocs::coo_plot()` 関数で，個別資料の「かたち」を描画することもできます．線の色や塗りつぶしなどの表現の変更も可能です．
+
 ```{r chunk8, echo=TRUE, eval=TRUE, fig.width = 3, fig.height = 3}
-coo_plot(shape[1], col = "grey", main = "Artefact #1") 
+coo_plot(shape[1], col = "grey", main = "Artefact #1")   # 資料1(shape[1])の「かたち」を灰色に塗りつぶして表示する，col=""で色の指定，main=""はキャプション  
 ```
   
-## **GMM Procedure 3: Outline Normalisation**
+## **GMM Procedure 3: Outline Normalisation／GMMの実行3：アウトラインの正規化**
 
 Normalisation, as stressed by Claude (2008), has long been an issue in the elliptic Fourier process. Normalisation can be performed through the actual elliptic Foruier transformation (using what is known as the "first ellipse"). As we noted in the first workshop, this process (normalisation and elliptic fitting to coefficients) is equivalent to the Procrustes Superimposition for landmark data./  
+
+
 
 It is recommended to normalise (standardise) and align your shapes before the `Momocs::efourier()` process. Rotation was considered before outline digitisation, however rotation could also be explored in Momocs through the `Momocs::coo_aligncalliper()` function. Here we will explore three transformation processes: 1) `Momocs::coo_center()`, 2) `Momocs::coo_scale()` and 3) `Momocs::coo_close()`.\  
 
