@@ -376,7 +376,7 @@ Note: for the elliptic Fourier coefficient discriminant analysis it is relativel
 
 楕円フーリエ係数の判別分析のために，`layer_morphospace_LDA()` 引数を使用したグラフに「かたち」を重ね合わせることは比較的容易です．\
 
-## **GMM Procedure 7: Multiple Analysis of Variance (MANOVA)／GMMの実行7：多変量分散分析(MANOVA)**
+## **GMM Procedure 7: Multivariate Analysis of Variance (MANOVA)／GMMの実行7：多変量分散分析(MANOVA)**
 
 So far we have explored the differences in shape within the whole group of artefacts and explored how well they can be seperated through their group variance. Now we need to test, within an statistical framework, whether there is a difference in the PC scores (representative of shape) within and between the different archaeological units. A MANOVA will be our required test given we have multiple groups and multiple column data (PC scores).\  
 
