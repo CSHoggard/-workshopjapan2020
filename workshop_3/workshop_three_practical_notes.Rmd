@@ -1,12 +1,12 @@
 ---
-title: "Geometric Morphometrics and Archaeological Science"
-subtitle: "Workshop Two (July 2020)"
+title: "Landmark-based Approaches to Archaeological Science"
+subtitle: "Workshop Three (#StayHomeButStudy2020)"
 author: "Dr. Christian Steven Hoggard (University of Southampton, United Kingdom)"
 output:
+  word_document: default
+  html_document: default
   pdf_document:
        latex_engine: xelatex 
-  html_document: default
-  word_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -21,15 +21,11 @@ We will spend roughly 3-5 minutes per 'chunk'. Chunks can be used as a means of 
 
 For participants: **When you complete a function please use a "thumbs up" emoji on Slack. If there is an issue please raise your query in the Zoom Chat**. We are allowing time between functions to ensure that all participants (of varying R knowledge) can keep up; if you finish a particular process early please explore the functions in the packages used throughout this workshop, or individual functions through the 'Help' tab in the 'Packages' window.
 
-This practical constitutes the second of three workshops on GMM and Archaeological Science, organised by Lucy Timbrell and Christopher Scott and led by Dr. Christian Steven Hoggard. This markdown, along with all resources (and recording of each workshop) can be found on the workshop GitHub repository: https://github.com/CSHoggard/-gmm_liverpool_2020.
-
-We thank the Arts and Humanities Research Council North West Consortium Doctoral Training Partnership (AHRC NWCDTP) for supporting this workshop.
-
 ## **About the Code, Packages and Data**
 
 One published dataset and two unpublished datasets are used in this workshop. The data from the first practical originates from: Vestergaard, C. and Hoggard, C.S. (2019). A Novel Geometric Morphometric (GMM) Application to the Study of Bronze Age Tutuli. *Danish Journal of Archaeology*, 8: 5-28. 
 
-Data for this publication is stored on the Open Science Framework (https://osf.io/fcp43/) and is stored (for ease) on the workshop repository (https://github.com/CSHoggard/-gmm_liverpool_2020/tree/master/workshop_two). Data for the second and third case studies are unpublished and also stored on the workshop repository. This data is copyright protected under ownership law; please ask the repository owner (Dr. Christian Hoggard) for use beyond the remit of this workshop.
+Data for this publication is stored on the Open Science Framework (https://osf.io/fcp43/) and is stored (for ease) on the workshop repository (https://github.com/CSHoggard/-workshopjapan2020/tree/master/workshop_3). Data for the second and third case studies are unpublished and also stored on the workshop repository. This data is copyright protected under ownership law; please ask the repository owner (Dr. Christian Hoggard) for use beyond the remit of this workshop.
 
 For this workshop we will be focusing on the analysis of two- and three-dimensional landmark data. The following packages are required:  
 
@@ -73,9 +69,9 @@ To do this we will first import the data, perform the necessary data registratio
 We will first import the data into the R Environment. As this data is .tps in format (with landmarks digitised in tpsDig2) we could use either `Geomorph::readland.tps` or `Momocs::import_tps()`. As we will use Momocs throughout this first case study the `Momocs::import_tps()` is your best choice (it is also more appropriate for class conversion in Momocs). As we are downloading this data from the GitHub repository we will use `rio::import` as follows:
 
 ```{r, chunk3, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
-tutuli_lm <- rio::import("https://github.com/CSHoggard/-gmm_liverpool_2020/raw/master/workshop_two/tutuli_lm.rds")
+tutuli_lm <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_3/tutuli_lm.rds")
 
-tutuli_data <- rio::import("https://github.com/CSHoggard/-gmm_liverpool_2020/raw/master/workshop_two/tutuli_data.rds")   
+tutuli_data <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_3/tutuli_data.rds")   
 
 ```
 
@@ -286,7 +282,7 @@ The resulting object is stored in the R Environment, with an .nts file saved int
 When all the landmarks are digitised, and all .nts files created, we can feed them all in together using the `geomorph::readmulti.nts`. For the purpose of the practical this object has been created in an .rds file and will be imported from the workshop GitHub repository (like in the previous case study).
 
 ```{r chunk26, echo=TRUE, eval=TRUE, message=FALSE}
-skull <- rio::import("https://github.com/CSHoggard/-gmm_liverpool_2020/raw/master/workshop_two/skull.rds")  
+skull <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_3/skull.rds")  
 ```
 
 As you will observe in the environment the data is in *n* x *d* x *s*, with *n* being the number of landmarks in total, *d* being the dimensions explored, and *s* being the sample size. This is an array, a series of rows, columns and layers. In this example, if we wish to view a particular specimen we would use our square parentheses but this time include two commas (as we're interested in the third aspect of this array) e.g. for the first specimen we would code...  
@@ -305,9 +301,9 @@ If a sufficient number of examples were included we could also use the `geomorph
 A further two objects are necessary: the metadata (the .csv table with the skull data) and the slider file (denoting which landmarks slide). Again, with the the `rio::import()` function we can include them into this workspace:  
 
 ```{r chunk28, echo=TRUE, eval=TRUE, message=FALSE}
-surface_lm_skull <- rio::import("https://github.com/CSHoggard/-gmm_liverpool_2020/raw/master/workshop_two/surface_lm_skull.rds") 
+surface_lm_skull <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_3/surface_lm_skull.rds") 
 
-skull_data <- rio::import("https://github.com/CSHoggard/-gmm_liverpool_2020/raw/master/workshop_two/skull_data.rds") 
+skull_data <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_3/skull_data.rds") 
 ```
 
 We need to inspect the skull_data to verify that are columns are correct. Using the `base::head()` function we realise we again need to convert our sex column into `factor` class (we will not worry about location as we are only investigating sex here). Like previous, we can use the `base::is.factor()` argument to verify that our change is correct.
@@ -386,13 +382,13 @@ Like before, we will download the dataset (with sex data), the sliding surface d
 
 
 ```{r, chunk38, echo=TRUE, eval=TRUE, message=FALSE}
-patella_dataset <- rio::import("https://github.com/CSHoggard/-gmm_liverpool_2020/raw/master/workshop_two/patella_dataset.rds")
+patella_dataset <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_3/patella_dataset.rds")
 
-patella_lm <- rio::import("https://github.com/CSHoggard/-gmm_liverpool_2020/raw/master/workshop_two/patella_lm.rds")
+patella_lm <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_3/patella_lm.rds")
 
-patella_links <- rio::import("https://github.com/CSHoggard/-gmm_liverpool_2020/raw/master/workshop_two/patella_links.rds")   
+patella_links <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_3/patella_links.rds")   
 
-patella_surfslide <- rio::import("https://github.com/CSHoggard/-gmm_liverpool_2020/raw/master/workshop_two/patella_surfslide.rds")   
+patella_surfslide <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_3/patella_surfslide.rds")   
 
 ```
 
