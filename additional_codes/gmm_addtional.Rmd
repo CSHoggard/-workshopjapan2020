@@ -109,7 +109,7 @@ calibrate_deviations_efourier(shape)  # オリジナルと計算結果の「か�
 ```
 
 ```{r chunk11, echo=TRUE, eval=TRUE, message=FALSE, warning = FALSE, fig.width = 8}
-efashape <- efourier(shape, nb.h = 11, smooth.it = 0, norm = TRUE)  # shapeのアウトライン係数を第11調和まで計算しefashapeに格納  
+efashape <- efourier(shape, nb.h = 17, smooth.it = 0, norm = TRUE)  # shapeのアウトライン係数を第17調和まで計算しefashapeに格納  
 ```
 
 ## **PCA and plotting／主成分分析の実行と結果の描画**
