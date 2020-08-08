@@ -1,0 +1,683 @@
+---
+title: "Landmark-based Approaches to Archaeological Science／考古科学におけるランドマーク分析"
+subtitle: "Workshop Three (#StayHomeButStudy2020)／第3回ワークショップ"
+author: "Dr. Christian Steven Hoggard (University of Southampton, United Kingdom)"
+output:
+  word_document: default
+  html_document: default
+  pdf_document:
+       latex_engine: xelatex 
+documentclass: bxjsarticle
+classoption: xelatex,ja=standard
+geometry: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(tidy.opts=list(width.cutoff=80),tidy=TRUE)
+Sys.setlocale("LC_ALL","English") #Windowsにおけるエンコード問題解決用
+```
+
+## **Introductory remarks／はじめに**
+
+This guide provides a "hands-on" step-by-step introduction into the application of geometric morphometric (GMM) methodologies in archaeological science (as conducted through the R Environment). This guide will **provide an overview of some different methods of analysing landmark data, before detailing three case studies (using 2D and 3D landmark data)**.
+
+これは、R環境下における考古学のための幾何形態測定学（GMM）の方法を、ステップ・バイ・ステップで学ぶハンズオン・ワークショップの実習ガイドです．ここでは、**ランドマーク分析に関するいくつかの方法を概観した後に、2Dおよび3Dのランドマークデータ分析に関する3つの事例分析を取り上げます．**
+
+We will spend roughly 3-5 minutes per 'chunk'. Chunks can be used as a means of rendering R output into documents, or to simply display code for illustration. The chunks presented here will minimise error resulting from manual input and ensure all participants are at the same stage. To run a 'chunk' (displayed as a shaded area and representing a function or suite of actions), we can press the "Run Selected Chunk" button, represented by a play button, or alternatively use the shortcut `ctrl + enter` on the highlighted code.  
+
+ワークショップでは、「チャンク」一つあたり3～5分の実習時間を取ります。チャンクは、Rのコードを示すと同時に、Rマークダウン・ドキュメント（.Rmd）の中で実行し、結果を表示するものです．チャンク中のコードを利用することで、参加者は、コードのご入力によるエラーを回避し、誰もが一つずつ同一のステップを体験することができます。Rマークダウン・ドキュメント中で影付きの範囲で示される、関数または一連の動作からなるチャンクを「実行」するためには、右向きの小さな三角形状の実行ボタン（"Run Current Chunk"）をクリックするか、実行したいコードを選択しショートカット`ctrl + enter`を押します．
+
+For participants: **When you complete a function please use a "thumbs up" emoji on Slack. If there is an issue please raise your query in the Zoom Chat**. We are allowing time between functions to ensure that all participants (of varying R knowledge) can keep up; if you finish a particular process early please explore the functions in the packages used throughout this workshop, or individual functions through the 'Help' tab in the 'Packages' window.
+
+ワークショップの間、講師は、受講者の進捗状況をZoom上で確認します．**チャンク内のコードを実行し結果が得られたら、Zoomの絵文字リアクション(非言語的リアクション)の「いいね」を表示してください**．ワークショップ中は、Rについての知識・経験の異なる参加者が、チャンクの実行結果を確認し、ついてこれるように、時間を取ります．もし、先にコードを実行し結果が得られたときは、RStudioのHelpタブから、使用しているRのパッケージや個別の関数について調べて見てください．
+
+
+## **About the Code, Packages and Data／コード・パッケージ・データについて**
+
+One published dataset and two unpublished datasets are used in this workshop. The data from the first practical originates from: Vestergaard, C. and Hoggard, C.S. (2019). A Novel Geometric Morphometric (GMM) Application to the Study of Bronze Age Tutuli. *Danish Journal of Archaeology*, 8: 5-28. 
+
+Data for this publication is stored on the Open Science Framework (https://osf.io/fcp43/) and is stored (for ease) on the workshop repository (https://github.com/CSHoggard/-workshopjapan2020/tree/master/workshop_3). Data for the second and third case studies are unpublished and also stored on the workshop repository. This data is copyright protected under ownership law; please ask the repository owner (Dr. Christian Hoggard) for use beyond the remit of this workshop.
+
+このワークショップでは、すでに刊行されているデータセットと、2つの未刊行のデータセットを使用します．最初の実習では、以下の論文の刊行データを使用します：Vestergaard, C. and Hoggard, C.S. (2019). A Novel Geometric Morphometric (GMM) Application to the Study of Bronze Age Tutuli. *Danish Journal of Archaeology*, 8: 5-28.
+
+この論文で使用したデータセットは、OpenScienceFramework (OSF, https://osf.io/fcp43/)に格納・公開されているほか、このワークショップのGitHubリポジトリでも公開しています (https://github.com/CSHoggard/-workshopjapan2020/tree/master/workshop_3)．このデータセットは著作権の保護下にあります。本ワークショップでの利用以外の目的で使用するときには、データ・リポジトリのオーナー（Dr. Christian Hoggard) に申請してください．
+
+For this workshop we will be focusing on the analysis of two- and three-dimensional landmark data. The following packages are required:  
+
+本ワークショップでは、2Dと3Dのランドマークデータを取り扱います．そのために、以下のパッケージを使用します．
+
+* **geomorph** v.3.3.1 (analysis of landmark data)  
+* **Momocs** v.1.3.0 (analysis of landmark data)  
+* **tidyverse** v.1.3.0 (visualisation of data)  
+* **rio** v.0.5.16 (import files from GitHub)  
+
+We are using the rio package and so we will not be required to download the data to a working directory and setting our RStudio accordingly (as is standard practice). Through the execution of all chunks in this markdown document all data will be imported, analysed and visualised.
+
+rioパッケージを使用することで、実習に使用するデータを各自のPCにダウンロードしておく必要がなくなります．各チャンクを実行すると、必要なデータが読み込まれ、分析され、可視化されます．
+
+Once R and RStudio have been installed, and this markdown file opened within RStudio (through `File` -> `Open file`), we need to install the aforementioned packages. For this workshop we will install these packages through the below 'chunk': 
+
+R／RStudioをインストールし、このマークダウン文書をRStudioの`File`メニューの`Open File`から開いた後で、先に紹介したパッケージをインストールする必要があります．ここでは、次のチャンクを実行すると必要なパッケージがインストールされます．
+
+```{r, chunk1, , eval=FALSE, echo=TRUE, message=FALSE, warning=FALSE}
+install.packages('geomorph', repos='http://cran.us.r-project.org') #geomorphをインストール  
+install.packages('Momocs', repos='http://cran.us.r-project.org') #Momocsをインストール  
+install.packages('tidyverse', repos='http://cran.us.r-project.org') #tidyverseをインストール  
+install.packages('rio', repos='http://cran.us.r-project.org') #rioをインストール  
+```
+
+As the tidyverse and Momocs packages may take time to install given the size of the files *please ensure that these packages are downloaded prior the workshop*. Once installed we can now activate and use these packages through the `library()` function. 
+
+tidyverseとMomocsはパッケージのサイズが大きいため、インストールに時間がかかるかもしれません．*ワークショップ開始前に、事前にインストールしておくことをお奨めします*（※事前にインストールした場合チャンク1は実行不要です）．必要なパッケージをインストールしたら、次は`library()`関数によりパッケージをアクティベートします．
+
+```{r, chunk2, , eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+library(geomorph)
+library(Momocs)
+library(tidyverse)
+library(rio)
+```
+
+## Case Study 1: Tutuli in the Nordic Bronze Age (2D)／実習1：北欧青銅器時代のトゥトゥリ（2Dランドマーク）
+
+In this first case study we will examine 375 tutuli from the Nordic Bronze Age (NBA). Tutuli are small circular plates and were originally thought to have been designed for practical purposes e.g. shield-buckles (Rafn 1856). More recently, archaeologists have argued that tutuli function as clothing accessories e.g. beltware and cape buttons (Bergerbrant 1999). Here we will focus on the strength of pre-existing classificatory schemes adopted by archaeologists, and address two questions. On the basis of pre-existing classificatory schemes: 
+
+* How successful can the four groups (types A/C/D/E) be differentiated?  
+
+* How successful can different shapes be attributed to different periods within the NBA?
+
+28 two-dimensional landmarks were digitised (in tpsDig2) from professional illustrations of tutuli cross-sections (a demo will be provided). As these shapes are typically symmetric, and given their abundance in catalogues (Aner et al. 1973, 1976-1978, 1981, 1986, 1991, 1995, 2001, 2005, 2008, 2011, 2014, Aner and Kersten 1979; Aner, Kersten and Neumann 1984; Aner, Kersten and Koch 1990; Aner et al. 1993), these cross-section illustrations represent a source of great interpretive potential. Please refer to Vestergaard and Hoggard (2019) for any of the above references. 
+
+最初の実習では、北欧青銅器時代(NBA)の375点のトゥトゥリのかたちを分析します．トゥトゥリは、小さな円形の板で、当初は盾の留め金と考えられていました(Rafn1856)．近年では、衣服の装飾品、たとえばベルトやケープの留め金ではないかと議論されています(Bergerbrant1999)．ここでは、先行研究による型式分類の確からしさに注目し、2つの論点を検討します：
+
+* 先行研究による4つの分類群(type A/C/D/E)はどれだけ効果的に形態を区別しているか?
+
+* 各型式分類は、それぞれNBAの異なる時期に帰属するのか?
+
+To do this we will first import the data, perform the necessary data registration method (**Generalised Procrustes Analysis**), and explore the main sources of shape variation through a **Principal Component Analysis (PCA)**, before testing the robustness of these groups through a **MANOVA (Multivariate Analysis of Variance)** and **Discriminant Function Analysis (DFA)**. A variety of other analyses can be performed; these will be demonstrated (subject to time limit).
+
+これらを検討するために、まずデータをインポートし、分析のための準備(**一般化プロクルステス分析**)を行ない、**主成分分析(PCA)**によって、〈かたち(shape)〉の変異がどのような要素によるのかを検討します．続いて**MANOVA(多変量分散分析)**と**判別分析(DFA)**により、分類の頑健性を検証します．そのほかの分析については、
+
+We will first import the data into the R Environment. As this data is .tps in format (with landmarks digitised in tpsDig2) we could use either `Geomorph::readland.tps` or `Momocs::import_tps()`. As we will use Momocs throughout this first case study the `Momocs::import_tps()` is your best choice (it is also more appropriate for class conversion in Momocs). As we are downloading this data from the GitHub repository we will use `rio::import` as follows:
+
+まずはじめにデータをRにインポートします．データは、tpsDig2でデジタル化された.tpsフォーマットのランドマークで、`Geomorph::readland.tps`または`Momocs::import_tps()`で使用することができます．ここではMomocsを使用するので、後者の関数を利用すべきです．まずGitHubリポジトリからデータを読み込むために`rio::import`関数を以下のとおり実行します(チャンク3)．
+
+```{r, chunk3, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+tutuli_lm <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_3/tutuli_lm.rds")
+
+tutuli_data <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_3/tutuli_data.rds")   
+
+```
+
+Note: for the purpose of this workshop I will detail in-text the function and its constitutent package e.g. `geomorph::readland.tps()`, however only the function is what we need to code e.g. `readland.tps()`. This helps you to understand what packages the functions originate from.  
+
+※ ここでは、それぞれの関数がどのパッケージのものかを明示するために、パッケージ名を前記するようにしています（例: `geomorph::readland.tps()`)．しかし実際には、`readland.tps()`だけで関数を実行することができます．
+
+With our data now in the R Environment we can now call our tps object through the `base:: View` functions. The `base::View()` function will highlight the three constituent parts of the tps file: the 1) *Coo* (coordinate data - generated in tpsDig2), 2) *cur* (the curve data if applicable - for sliders), and 3) *scale* (the scale data if present). It is the Coo data which we will take forward (size is not considered here).
+
+Rに読み込んだデータは、`base::View`関数で表示させることができます．これにより、tpsファイルの3つの項目が表示されます:
+  1) *Coo* tpsDig2により取得された座標データ  
+  2) *cur* 曲線データ  
+  3) *scale* スケール(大きさ)データ  
+ここで分析に使用するのはCooデータです．大きさは、ここでは検討しません．
+
+We can first examine the database using the `utils::head()`.
+データベースの内容は、`utils::head()`関数で確認することができます．
+
+```{r, chunk4, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+head(tutuli_data)
+
+```
+
+In order to use examine the date and classifications columns later we require them to be of class *factor* (`<fct>`); at present they are `<chr>`, that is to say of type 'character', an object that contains character strings.  We can do this quite easily using the `base::as.factor()` argument on the specific column (which can be called using the dollar sign). We can then double-check to ensure they are of class factor with the `base::is.factor()`, as follows:
+
+後ほど、編年(date)と分類(classification)を検討するため、これらのデータ列を*因子型(`<fct>`)に設定する必要があります（デフォルトでは文字型(`<chr>`)）．`base::as.factir()`関数で、設定する列名に$を付けて引数として呼び出すことで容易に実行できます(チャンク5)．
+
+```{r, chunk5, echo = TRUE, message=FALSE, warning=FALSE}
+tutuli_data$date <- as.factor(tutuli_data$date)
+tutuli_data$classification <- as.factor(tutuli_data$classification) #dateとcalassificationを因子型に設定  
+
+is.factor(tutuli_data$date)
+is.factor(tutuli_data$classification)
+
+```
+
+Finally, we can convert our artefact id column into the row names using the `tibble::column_to_rownames` function. Note: could have been performed during the .rds object creation.
+
+最後に、`tibble::column_to_rownames`関数で、遺物ID列を行名に変換します(チャンク6)．
+
+```{r, chunk6, message=FALSE, warning=FALSE}
+tutuli_data <- column_to_rownames(tutuli_data, var = "artefact_id") 
+
+```
+
+Our database is now formatted appropriately.
+
+これでデータは正しくフォーマットされました．
+
+Central to Momocs are a specific suite of shape classes, depending on the landmarking specific. These classes can be divided into three: 1) *outlines* (OutCoo), *open outlines* (OpnCoo) and *landmarks* (LdkCoo), with one class specific to your own dataset. While some operations in Momocs are generic and do not depend on one of these classes, many functions require your data to be one of these specific 'S3 objects'. In this instance our tps data is comprised of landmarks, and so we wish for our data to be `LdkCoo`, as to enable a Generalised Procrustes Analysis and subsequent exploratory and analytical procedures.  
+
+The coordinate data (coo) must therefore be turned into outline data through the `Momocs::Ldk()` function for the workflow to work. Once performed, we can then enter the object (here titled 'tutuli_shape') and examine its properties. For landmark visualisation we can also input the links between the landmarks. This can be imported from a .csv file or a notepad file, however today we will create the links in-house, so to speak (note: this must be imported prior the `Momocs::Ldk()` function). The `base::rbind` function takes a series of vector data or a matrix and creates x number of columns. Each number corresponds to a landmark, with each paid being defined within one concatenated set of parentheses:
+
+Momocsの中核は、固有の「特徴取得方法」ごとの〈かたち〉のクラスです．それらは以下の3群に分かれ、ひとつのデータセットはひとつのクラスで構成されます: 1)*アウトライン(
+閉曲線としての外形）* (OutCoo)、2)*開曲線* (OpnCoo)、3)*ランドマーク* (LdkCoo)。Momocsの動作のいくつかはジェネリックで他のパッケージと共通なためこれらのクラスに依存しませんが、多くの関数は'S3オブジェクト'として特定のクラスである必要があります．ここでは、tpsデータはランドマークで、一般化プロクルステス分析とその後の探索と分析を実行するために、データクラスは'LdkCoo`とします．
+
+座標データ(coo)は、`Momocs::Ldk()`関数によりアウトライン・データに変換する必要があります．実行したら、ここでは'tutuli shpae'と名付けたオブジェクトに格納し、その属性を検討します．ランドマークの可視化のために、ランドマークの結合データを入力します．これは.csvまたはnotepad file(プレーンテキスト)として読み込むことができますが、今日は結合データを直接入力します(チャンク7: これは`Momocs::Ldf()`関数の実行の前に読み込まれなければなりません)．`base::rbind`関数は、一連のベクトル・データ(c(a,b)として記述される)または行列を、X個の列としてひとつのデータオブジェクトに格納します．それぞれの番号はランドマークに対応し、ひとつのカッコで囲まれます．
+
+```{r, chunk7, message=FALSE, warning=FALSE}
+outline<-rbind(c(1,2),c(2,3),c(3,4),c(4,5),c(5,6),c(6,7),c(7,8),c(8,9),c(9,10),c(10,11),c(11,12),c(12,13),c(13,14),c(14,15),c(15,16),c(16,17),c(17,18),c(18,19),c(19,20),c(20,21),c(21,22),c(22,23),c(23,24),c(24,25),c(25,26),c(26,27),c(27,28),c(28,1)) #1～28のランドマークを結合し1に戻る結合データをoutlineに格納する
+```
+
+We can now perform the `Momocs::Ldk()` argument:
+
+これで'Momocs::Ldk()`に必要な引数を与えて実行することができます(チャンク8)．
+
+```{r, chunk8, message=FALSE, warning=FALSE}
+ldk_tutuli <- Ldk(tutuli_lm$coo, links = outline, fac = tutuli_data) #座標データをアウトラインに変換してldk_tutuliに格納
+```
+
+Note: we need to call the coordinate component of the object. If we wish we can now call the object and observe that there are 375 landmark configurations, each with 28 landmarks. We can also use square parentheses to call up individual objects. For example, if we wish to see the coordinate data for item #3 we can use `[3]`:
+
+注: ここでは座標データをもつオブジェクトを引数として呼び出す必要があります．ここで取り扱うのは、それぞれ28のランドマークを有する375資料のデータセットです．個別のデータは角カッコ[]で呼び出すことができます．たとえば、3番目の資料のデータを呼び出すときは[3]のように(チャンク9)．
+
+```{r, chunk9, message=FALSE, warning=FALSE}
+ldk_tutuli[3]
+```
+
+Now our data is in the R environment and in the appropriate class required for Momocs, we can examine the landmark configurations We can first look at all landmarks through the `Momocs::panel()` function (note: this will take some time and it is advised not to use this function during the workshop). We can also use the `Momocs::inspect()` and `Momocs::coo_plot()` functions for various other shape classes. But for example:  
+
+ここまでで、必要なデータがRに読み込まれ、Momocsが要求するクラスが与えられたので、ランドマークを検討することができます．まずはじめに、`Momocs::panel()`関数を使用して、すべてのランドマークを確認することができます(注: この動作は時間がかかりますのでワークショップ中に実行しないことをお奨めします)．`Momocs::inspect()`関数と`Momocs::coo_plot()`関数を使用することで、そのほかの〈かたち〉のデータ・クラスを確認することもできますが、今日は扱いません．
+以下のように`Momocs::coo_plot()`関数により個々のランドマークを描画することができます(チャンク10)．
+
+```{r, chunk10, message=FALSE, warning=FALSE, fig.cap = "An example plot of the tutuli using the `Momocs::coo_plot()` function. The size and the shape of landmarks can be customised using the `cex` and `pch` arguments.", fig.dim = c(6,6)}
+coo_plot(ldk_tutuli[8], cex = 1.5, pch = 20, col = "grey", poly = TRUE, centroid = FALSE, border = TRUE)
+```
+
+We can now remove all factors external to shape (scaling, translation and rotation) through a *Generalised Procruses Analysis*. In Momocs there are a number of Procrustes procedures we could implement:  
+
+続いて、*一般化プロクルステス分析*によって、スケールや移動、変形など〈かたち〉以外の要素を除去します．Momocsでは、以下のいくつかのプロクルステス分析の手順を使用できます: 
+
+* *Full Generalised Procrustes* (`fgProcrustes`: default) 
+
+* *Full Generalised Procrustes with sliding landmarks* (`Momocs::fgsProcrustes`)  
+
+* *Full Generalised Procrustes between two shapes* (`Momocs::fProcrustes`)  
+
+* *Partial Procrustes between two shapes* (`Momocs::pProcrustes`)  
+
+Which procedure you use depends on the types of shapes you have (sliders vs. non-sliders) and the nature of the superimposition. We require the `Momocs::fgProcrustes` function for this particular dataset and process. This iterative process will return a number of useful components, including the number of iterations, the pairwise distance measures, the mean shape configuration and, if scale has been included, the centroid sizes. This object is now of class *LdkCoe* (landmark coefficients), this is important when considering what functions can be used in Momocs. Note: we could alternatively import and analyse our data through geomorph, using the `geomorph::readland.tps()` and `geomorph::gpagen()` functions.  
+
+どの手順を使用するかは、分析する〈かたち〉の種類(スライダーか、非スライダーか)と重ね合わせの方法によります．今回のデータセットの分析には、完全な一般化プロクルステス分析を実施する`Momocs::fgProcrustes`関数を使用します．この反復的な手順は、反復の回数、組み合わせの距離計測値、平均的な〈かたち〉の構成、およびもしスケール情報が含まれるならセントロイド・サイズなど、有用な要素を返します．この関数の実行で得られたオブジェクトは*LdkCoe*(ランドマーク係数)クラスで、Momocsでどの関数を使用できるのかを考えるときに重要です．注: データを、`geomorph::readland.tps()`関数および`geomorph::gpdgen()`関数を使用してgeomorphに読み込み分析することも可能です．
+
+```{r, chunk11, message=FALSE, warning=FALSE}
+gpa_tutuli <- fgProcrustes(ldk_tutuli, tol = 0.1) #完全な一般化プロクルステス分析を実施し、結果をgpa_tutuliに格納
+```
+
+Following this process we can visualise our shapes through the `Momocs::stack()` function. This image may appear variable, with landmarks failing to align, however there is great variability in the shapes of tutuli.  
+
+これらの手順に続いて、`Momocs::stack()`関数を使用して〈かたち〉を可視化できます．結果はおそらく、整列していないばらついたものになるでしょう．しかしそれはトゥトゥリの〈かたち〉の多様性を示しています(チャンク12)．
+
+```{r, chunk12, message=FALSE, warning=FALSE, fig.cap = "Generalised Procrustes Analysis (GPA) of all 375 tutuli (using the `Momocs::fgProcrustes` function). Note: the image may appear variable, with landmarks failing to align, however this is the result of great variability in the shapes of tutuli - see `Momocs::panel()`", fig.dim = c(5,5)}
+stack(gpa_tutuli, title = "")
+```
+
+With our Procrustes-alligned coordinates we can now examine shape variance among all examples, and between-group shape variance (for period and classification).  
+
+プロクルステス整列された座標により、入力されたすべての資料の〈かたち〉の偏差と、分類群間の〈かたち〉の偏差(時期と分類)を検討することができます．
+
+To examine the main sources of shape variation we will first perform a **Principal Component Analysis** (please refer to the first workshop for a detailed explanation of PCA). This procedure will allow us to understand the main sources of variation within our data, and how our groups (classification and date) map onto this morphospace. We can also begin to understand how much each source of variation contributes to the overall variation within a dataset.  
+
+〈かたち〉の多様性が何に拠っているのかを検討するために、まず**主成分分析(PCA)**を実施します．この手順では、対象資料群の〈かたち〉の特徴がどのようなものであり、既往の分類群(型式分類と時期)が形状空間にどのようにマッピングされるかを理解できるようになります．
+
+Our landmark coefficients first need to be of class 'PCA'. We will therefore use the `Momocs::PCA()` function (using `base::prcomp()`). As our factors are embedded within the procrustes coordinates (as we linked them at the beginning) we do not need to add them here. The code goes as follows:
+
+ランドマーク係数は、まずデータ・クラス`PCA`出なければなりません．そこで`Momocs::PCA()`関数を使用します．必要な因子はプロクルステス座標に埋め込まれているので、ここで追加する必要はありません．実行コードは以下のとおりです(チャンク13)．
+
+```{r, chunk13, message=FALSE, warning=FALSE}
+pca_tutuli <- PCA(gpa_tutuli) #gpa_tutuliに対して主成分分析を実施し結果をpca_tutuliに格納
+```
+
+Technical note: scaling and centering are `TRUE` by default (however this can be changed through the scale and center arguments).  
+
+注: スケール調整と位置合わせはデフォルトで`TRUE`となっています(引数として指定することが可能です)．
+
+With the PCA object we can assess the contribution of each source of shape variation through a **scree table** and **scree plot** using the `Momocs::scree()` and `Momocs::scree_plot()` arguments.
+
+PCAオブジェクトにもとづき、`Momogcs::scree()`および`Momocs::screep_plot()`関数を使用することで、*スクリー表*と*スクリープロット*(因子の寄与度を降順で表およびグラフ化したもの)により〈かたち〉の変異への各主成分軸の寄与量を検討することができます．
+
+```{r, chunk14, echo = TRUE, message=FALSE, warning=FALSE}
+scree(pca_tutuli)
+```
+
+Here we can see that the first source of shape variance (the first principal component) accounts for 68.76% of all shape variation within our dataset, with the first six sources accounting for greater than 95% cumulative shape variance. We can also visualise this in bar graph form:  
+
+この結果から、第1主成分が68.76%の〈かたち〉の変異を説明し、また第1～第6主成分軸が累積で95%以上を説明することを確認できます．この結果を次のとおり棒グラフで表示することもできます(チャンク15)．
+
+```{r, chunk15, message=FALSE, warning=FALSE, fig.cap = "A scree plot of the first ten principal components (using the `Momocs::scree_plot()` function", fig.dim = c(5,5)}
+scree_plot(pca_tutuli, 1:10)
+```
+
+We can now plot of PCA through the `Momocs::plot_PCA()` function. This plot highlights that the four different classifications can be teased apart quite successfully in the first two principal components. We can also see that first principal component extends from narrow thin-lipped tutuli to high-peaking tutuli, with the second principal component accounting for the cross-section cavity. Convex hulls are visualised to show the distribution of the group in its entirety, however these are prone to outliers and confidence ellipses would be a preferred visual tool (both can be achieved through the `Momocs::plot_PCA()` tools). Many of these arguments (from initialisation to visualisation) can be handled through Dplyr's forward-pipe operator (%>%). You can use this operator to pass the left-hand side input through the right-hand side operator (treat it as a 'and then' operative. This will be demonstrated during the practical, for teaching purposes we're taking the long way around.  
+
+主成分分析の結果は`Momocs::plot_PCA()`関数によりプロットできます．その結果をみると、4つの型式分類は、第1・第2主成分軸によって、有意に分かれているといえます．第1主成分軸は、薄く平たい縁から中心が高くとがった〈かたち〉の変化です．第2主成分軸は断面の湾曲(外湾～直角)の変化です．凸包は各型式分類の範囲を示します．しかし外れ値を含むため、信頼楕円(confidence ellipses)が好まれる場合もあります．いずれも`Momocs::plot_PCA()`関数で表示できます．さまざまな引数は、初期設定から可視化までの過程について、Dplyrのパイプ演算子(%>%)を使うことで次々に受け渡すこともできます．これは、左側に書かれた入力データを、右側へと受け渡していくものです．
+
+```{r, chunk16, message=FALSE, warning=FALSE, fig.cap = "A Principal Component Analysis (PC1 vs. PC2) of NBA tutuli. Colours correspond to classification *sensu* Montelius (1885).", fig.dim = c(6,6)}
+plot_PCA(pca_tutuli, axes = c(1,2), ~classification, chull = FALSE, chullfilled = TRUE, morphospace_position = "range_axes", zoom = 1)
+```
+
+It is important to note that these sources are shape variation pertain to the entire group, and not specific groups. It is therefore important to examine other principal components in order to identify principal components which are good discriminators (i.e. those that are archaeologically relevant). The axes on this plot can be changes through amending the `axes = c(1,2)` argument to whichever principal components are best.  
+
+注意しておくべきことは、ここで検討しているのは特定の型式分類群ではなく、対象資料全体の〈かたち〉の変異であるということです．そのため、型式を「分ける」際に意味のある、考古学的に意味のある判別能力をもつ主成分を検討することも重要です．PCAプロットに表示する主成分は、`axes = c(1,2)`引数を変更することで可能になります．
+
+We can repeat this process for periodisation, as follows: 
+
+同じ手順を、時期区分に対応して実行することができます(チャンク17)．
+
+```{r, chunk17, message=FALSE, warning=FALSE, fig.cap = "A Principal Component Analysis (PC1 vs. PC2) of NBA tutuli. Colours correspond to period in the Nordic Bronze Age (NBA).", fig.dim = c(6,6)}
+plot_PCA(pca_tutuli, axes = c(1,2), ~date, chull = FALSE, chullfilled = TRUE, morphospace_position = "range_axes", zoom = 1)
+```
+
+Again, clustering can be seen with each period of the Nordic Bronze Age with stage three featuring more negative PC1 vaues and stage two corresponding with more positive values.  
+We can also visualise these principal components, and the variance within different archaeological units, in an alternative way, through the `Momocs::boxplot()` function. Boxplots have the advantage of condensing a multi-dimensional space into two axes (subject to graphical parameters). The code is as follows:  
+
+凸包が示すクラスターは、北欧青銅器時代の4時期です．III期は第1主成分軸のマイナス側に分布し、II期はプラス側に位置します．これらの主成分と、異なる考古学的な単位の偏差などは、たとえば`Momocs::boxplot()`関数などの異なる方法で可視化できます．ボックスプロット(箱ひげ図)は、多次元的な要素を2軸で示すことに優れています(チャンク18)．
+
+```{r, chunk18, message=FALSE, warning=FALSE, fig.cap = "A Principal Component Analysis (PC1 vs. PC2) of NBA tutuli represented as a box-plot. Colours correspond to period in the Nordic Bronze Age (NBA).", fig.dim = c(6,6)}
+boxplot(pca_tutuli, ~date, nax = 1:5)
+```
+
+If we wish, we can use `Momocs::plot_MSHAPES()` function for displaying the mean shapes for both factors. A variety of methods are available (using the `Momocs::coo_plot()` argument) however `Momocs::plot_MSHAPES()` is the most convenient method. Here I exemplify piping of mean shapes for classification:  
+
+`Momocs::plot_Mshapes`関数を使用することで、各要素の平均的な〈かたち〉(mean shapes)を表示することができます．ほかにも、`Momocs::coo_plot()`などいくつかの手段がありますが、`Momocs::plot_MSHAPES()`はもっとも便利な方法です．ここではパイプ演算子(%>%)を使用した例を示します(チャンク19)．
+
+```{r, chunk19, message=FALSE, warning=FALSE, fig.cap = "Mean shapes of different tutuli classifications (as plotted through `Momocs::plot_MSHAPES()`", fig.dim = c(6,6)}
+gpa_tutuli %>% MSHAPES(~classification) %>% plot_MSHAPES()
+```
+
+As we highlighted in the first workshop, PCA explores differences in shape variation irrespective of group composition (i.e. *a priori* groupings). Through a discriminant analysis we can examine differences in shape as based on their maximum group seperation (between-group variation in contrast to within-group variation). In Momocs, we use the `Momocs::LDA()` function on either the landmark coefficients (Procrustes Coordinates) or the PCA scores to produce our class accuracy, plots and correction scores. There is no correct answer as to which to use, it depends on the data you wish to examine. In using the PCA scores it is possible to retain a number of components that are deemed important, this can be either: 1) the first nth components, 2) the number of components representing a certain level of shape variance (e.g. 95%, 99%, 99.9%), or 3) all principal components. The coefficients, in contrast would encapsulate all shape data.  
+
+以前のワークショップで確認したとおり、主成分分析は事前に行なわれる分類に関係なく全体の〈かたち〉の多様性の差異を検討します．判別分析では、分類群内の変異に対する分類群間の変異を検討することができます．Momocsでは、`Momocs::LDA()` 関数をランドマーク係数(プロクルステス座標)またはPCAスコアのいずれかに対して用いて、クラス精度、プロット・補正スコアを取得します．どれを使うのが正解というわけではなく，調べたいデータによって異なります．PCAスコアを使用する場合、重要と考える数の要素を保持することができますが、それらは、1)第1～n番目の成分、2)〈かたち〉の変異を十分に説明するだけの成分(例: 累積寄与率95%、99%、99.9%など)、3)すべての主成分などです．対照的にランドマーク係数は、すべての〈かたち〉の情報を内包しています．
+
+With greater levels of data you may include a degree of statistical noise, with smaller unimportant variables taking precedence, and so an optimal level of data is necessary if you persue PCA scores (see Kovarovic et al. 2011 for more information).  
+
+データの量・要素が大きくなると、あまり意味のない変数に起因する統計的ノイズが生じることがあるので、PCA スコアを使用する場合は、最適なレベルのデータが必要となります（詳細については、Kovarovicら2011を参照のこと）．
+
+First we must create a LDA object (or alternatively perform piping):  
+
+判別分析の手順では、まずLDAオブジェクトを作成します(各手順をパイプ演算子でつなぐことも可能です)．
+
+
+```{r chunk20, echo=TRUE, eval=TRUE, message=FALSE}
+lda_tutuli_class <- LDA(gpa_tutuli, ~classification) #gpa_tutuliに対して、型式分類(classification)によりLDAを実施
+lda_tutuli_date <- LDA(gpa_tutuli, ~date) #gpa_tutuliに対して、時期区分(date)によりLDAを実施
+
+```
+
+We can now examine different aspects of our discriminant analysis data, including the cross-validation table (actual vs. predicted categories for artefacts) and the proportion of correctly classified individuals.  
+
+これにより、資料の実際の分類カテゴリと事前に予測されたカテゴリの交差検証表や、「正しく分類された」資料の割合など、判別分析データのさまざまな結果を検討できます． 
+
+```{r chunk21, echo=TRUE, eval=TRUE, message=FALSE}
+lda_tutuli_class$CV.correct
+lda_tutuli_class$CV.ce
+lda_tutuli_date$CV.correct
+lda_tutuli_date$CV.ce
+```
+
+When we use the `CV.correct` argument we see that 88.53% of tutuli can be appropriately differentiated by the Montelius system. We can examine this in further detail through the `CV.ce` argument. Higher percentages of success can be seen for groups D (96.37%) and A (92.65%), and admirable success rates for groups E (86.89%) and C (81.30%). For designated periodisation, these can be successfully discriminated 88% of the time with 92.36^ and 81.52% for the second and third parts of the NBA, and little success with the transitional and LBA examples (this is the result of an incredibly low sample size). Pursuing this further through Machine Learning methodologies for undoubtedly increase the success of these groups, and highly possible anomalies in their classification. `Momocs::classification_metrics()` is also a useful analytical and exploratory tool here.  
+
+`CV.correct` 引数を用いると，88.53%のトゥトゥリが、モンテリウスの分類法で適切に区別できることがわかります．これをさらに詳しく調べるには，`CV.ce` 引数を用います．判別率がより高かったのはD群(96.37%)とA群(92.65%)、やや高いのはE群(86.89%)とC群(81.30%)です。時期区分との対応は88%で、II期とIII期についてそれぞれ92.36%と81.52%でしたが移行期とLBA(後期青銅器時代)の例では判別率は低く、これはサンプルサイズの小ささに起因すると考えられます．機械学習の方法論を用いてこれをさらに追求すれば、各分類群の判別率は間違いなく上昇するでしょう．`Momocs::classification_metrics()` も、有用な分析・探索ツールです．
+
+Finally, for this case study let's test our interpretations through a MANOVA (through PC scores). A Procrustes ANOVA could be conducted through geomorph, however as we have used Momocs throughout this first case study let's finish off here with a MANOVA (the next examples will perform a Procrustes ANOVA.  
+
+最後に、このデータセットについて主成分スコアを用いてMANOVA(多変量共分散分析)を用いて解釈を検定してみましょう．プロクルステスANOVAはgeomorphを用いても実行できますが、今回はMomocsを使用したので、MANOVAを実施します（次の事例では、プロクルステスANOVAを実行します）．
+
+For this we require the `Momocs::MANOVA()` function. Again, this can be piped using Dplyr's operator or done manually. A manual version would look like this:  
+
+'Momocs::MANOVA()`の実行コードは以下のとおりです(チャンク22)．繰り返しになりますが、これらはパイプ演算子で繋ぐことも可能です．
+
+```{r chunk22, echo=TRUE, eval=TRUE, message=FALSE}
+manova_tutuli_class <- MANOVA(pca_tutuli, ~classification)
+manova_tutuli_date <- MANOVA(pca_tutuli, ~date)
+manova_tutuli_class_pw <- MANOVA_PW(pca_tutuli, ~classification)
+manova_tutuli_date_pw <- MANOVA_PW(pca_tutuli, ~date)
+```
+
+We have used the `Momocs::MANOVA_PW()` function to include pairwise values, highlighting the statistical relationships between factor sub-groups.  
+
+`Momocs::MANOVA_PW()` 関数では、値の組み合わせを含めることで、要素のサブグループ間の統計的関係を確認することができます(チャンク23)．
+
+```{r chunk23, echo=FALSE, eval=FALSE, message=FALSE}
+manova_tutuli_class
+manova_tutuli_date
+manova_tutuli_class_pw
+manova_tutuli_date_pw
+```
+
+These again highlight the degree with which different categories can be partitioned on the basis of cross-sectional shape. We can therefore conclude that the date and classification categories which archaeologists perscribe tutuli to work (that is not to say that they are chronologically correct just that the groupings work!).  
+
+Option: now we are finished with this case we can remove all items from the environment with the `base::rm()` as below:
+
+これらは、横断面の形状に基づいて、各型式分類がどの程度の割合で〈区分〉されているかを表しています．したがって、考古学者がトゥトゥリを分類する、時期区分と型式分類カテゴリは有効であると結論づけることができました．ただし年代(序列)が正しいということではなく、単にグループ分けが有効であるというだけですが！ 
+
+オプション: これでこのケースの処理が終了したので、以下のように `base::rm()`を使って、作成したオブジェクトをすべて削除することができます．
+
+```{r chunk24, echo=TRUE, eval=FALSE, message=FALSE}
+rm(list = ls()) #注意: 実行すると読み込んだデータ、作成したオブジェクトなどがすべて削除されます
+```
+
+
+## Case Study 2: Cranial Morphology vs. Sex (3D)／実習2：頭骨の形態学と性別(3Dランドマーク)
+
+In this next case study we will investigate three-dimensional shape changes in cranial morphology, and the relationship between sex and cranial shape. As a simple demonstration we will use six crania (2 female and 4 male).  
+
+次に頭蓋形態の立体的な形状変化、性別と頭蓋形状の関係を検討します．簡単な実習として、６つの頭蓋骨（女性２名、男性４名）の3D計測データを使用します．
+
+In the previous case study we used Momocs to investigate our two-dimensional landmark data (in .tps format). It provided the most immediate form of analysis for our data, and allowed a number of interesting visualisations. In this example we will use geomorph to examine our three-dimensional data (in .ply ASCII format). Geomorph relies more on base R (in comparison to Momocs which is more 'tidy'), and so our grammar may change in areas.  
+
+トゥトゥリの事例では、２Dのランドマークデータ（.tps形式）を検討するためにMomocsを使用しました．これはデータの分析を行なう最も簡単な方法であり、多くの興味深い結果を可視化してくれました．当該形態の事例では、3Dデータ（.ply ASCII形式）を検討するために、geomorphを使用します。geomorphは、より'tidy'に構成されているMomocsと比較して）、よりRのベースに依存しているので、記法が異なる部分があるかもしれません．
+
+Files of .ply format can be fed into R through `geomorph::read.ply` through the sample code (providing that the data is saved to a working:
+
+.ply形式のファイルは、サンプルコードを使って `geomorph::read.ply` を使ってRに送り込むことができます（データが作業用のファイルに保存されている必要があります）．
+
+```{r chunk25, echo=TRUE, eval=FALSE, message=FALSE}
+SK1 <- read.ply("skull_1.ply", ShowSpecimen = FALSE, addNormals = FALSE)
+```
+
+Note: The R package *Rvcg* is useful for importing your STL or binary PLT meshes into R and converting to Ascii PLY format.
+
+注: *Rvcg*パッケージは、STLまたはバイナリ型式のPLTなどの3DメッシュをRにインポートし、Ascii PLYフォーマットに変換するのに便利です．
+
+With the SK1 object we can now begin digitising landmarks onto the cranium. In this case study we will digitise 23 landmarks (refer to the landmark guides and documentation in the GitHub repository). For increased resolution we will include 200 surface sliding semilandmarks. Please see Gunz et al. (2005) and Mitteroecker and Gunz (2009) for more information.  
+
+SK1オブジェクトを使って、頭蓋骨上のランドマークのデジタイズを行なえます．この実習では、23個のランドマークをデジタイズします（GitHubリポジトリのランドマークガイドとドキュメントを参照してください）．解像度を上げるために、200個のサーフェススライディング・セミランドマークを追加します。詳細はGunz et al. (2005)とMitteroecker and Gunz (2009)を参照してください． 
+
+In order to digitise our landmarks through this procedure we will first need to build a template for the digitisation of landmarks across specimens. This will be performed through the `geomorph::buildtemplate` function. This function requires an object of class mesh3d/shape3d (our .ply file), the number of fixed landmarks (23) and the number of surface.sliders (200). A graphical user interface (GUI) then appears allowing you to digitise your 23 landmarks; the 200 surface sliding landmarks will be automatically placed following this digitisation process (and for every subsequent specimen). Please refer to the R documentation (`?geomorph::buildtemplate`) for more information. This will be demonstrated throughout the workshop. I have included all six .ply files to allow digitisation following the workshop.  
+
+この手順でランドマークをデジタイズするためには、まず、標本全体のランドマークをデジタイズするためのテンプレートを作成する必要があります．これは`geomorph::buildtemplate`関数を用いて行います。この関数はmesh3d/shape3dクラスのオブジェクト（.plyファイル）、固定ランドマークの数（23）、surface.slidersの数（200）を要求します．GUIが表示され、23個のランドマークをデジタイズすることができます:  200個のサーフェス・スライダー・ランドマークは、このデジタルイズの手順に続いて、すべての資料に対して自動的に配置されます。詳細はRのドキュメント(`?geomorph::buildtemplate`)を参照してください．これはワークショップの中で実演されます．ワークショップ後にデジタイズできるように、6つの.plyファイルをすべて含めました。 
+
+The resulting object is stored in the R Environment, with an .nts file saved into the working directory. Once the first skull has been digitised you continue the process with the `geomorph::digitsurface()` function.  
+
+結果として得られたオブジェクトは、作業ディレクトリに保存された.ntsファイルで、Rに保存されています．最初の頭蓋骨がデジタイズされたら、`geomorph::digitsurface()`関数で処理を続けます．
+
+When all the landmarks are digitised, and all .nts files created, we can feed them all in together using the `geomorph::readmulti.nts`. For the purpose of the practical this object has been created in an .rds file and will be imported from the workshop GitHub repository (like in the previous case study).
+
+すべてのランドマークがデジタルイズされ、.ntsファイルが作成されたら、`geomorph::readmulti.nts`関数を使ってすべてのランドマークを読み込むことができます．実習用には、これらのオブジェクトは.rdsファイルとして、ワークショップのGitHubリポジトリからインポートされます(チャンク26)．
+
+```{r chunk26, echo=TRUE, eval=TRUE, message=FALSE}
+skull <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_3/skull.rds")  
+```
+
+As you will observe in the environment the data is in *n* x *d* x *s*, with *n* being the number of landmarks in total, *d* being the dimensions explored, and *s* being the sample size. This is an array, a series of rows, columns and layers. In this example, if we wish to view a particular specimen we would use our square parentheses but this time include two commas (as we're interested in the third aspect of this array) e.g. for the first specimen we would code...  
+
+ここでは、データの形式は*n* x *d* x *s*となっており、*n*はランドマークの総数、*d*は探索された次元、*s*はサンプルサイズとなっています。これは配列であり，行，列，層の連続です．この例では，特定の標本を表示したい場合は，角カッコ[]を使用しますが，今回はコンマを2つ入れます（配列の3番目の様相に注目するため）． 
+
+```{r chunk27, echo=TRUE, eval=FALSE, message=FALSE}
+skull[,,1]
+
+#OR
+
+# rgl.open()
+# rgl.points(skull[,,1], r = 0.2)
+```
+
+If a sufficient number of examples were included we could also use the `geomorph::plotOutliers` argument to examine which specimens have a Procrustes Distance from the mean (incase of a landmarking issue, for example). 
+
+十分な数のサンプルが含まれているならば、どの標本が平均からのプロクルステス距離を有しているかを調べるために、`geomorph::plotOutliers`引数を使うこともできます(例えば、ランドマーク化に問題がある場合)．
+
+A further two objects are necessary: the metadata (the .csv table with the skull data) and the slider file (denoting which landmarks slide). Again, with the the `rio::import()` function we can include them into this workspace:  
+
+さらに2つのオブジェクトが必要です: メタデータ(頭蓋骨データの.csvテーブル)とスライダーファイル(どのランドマークがスライドするかを示す)です。ここでも、`rio::import()`関数を使って、これらのオブジェクトをこのワークスペースに読み込むことができます．
+
+```{r chunk28, echo=TRUE, eval=TRUE, message=FALSE}
+surface_lm_skull <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_3/surface_lm_skull.rds") 
+
+skull_data <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_3/skull_data.rds") 
+```
+
+We need to inspect the skull_data to verify that are columns are correct. Using the `base::head()` function we realise we again need to convert our sex column into `factor` class (we will not worry about location as we are only investigating sex here). Like previous, we can use the `base::is.factor()` argument to verify that our change is correct.
+
+skull_dataを検査して、列が正しいかどうかを確認する必要があります．`base::head()`関数を使用すると、性別の列を`factor` (因子)クラスに変換する必要があることに気付きます(ここでは性別だけを調べるので、場所は気にしません)．最初の実習とと同様に、`base::is.factor()` 引数を使って変更が正しいことを確認することができます．
+
+```{r chunk29, echo=TRUE, eval=TRUE, message=FALSE}
+head(skull_data)
+skull_data$Sex <- as.factor(skull_data$Sex)
+is.factor(skull_data$Sex)
+```
+
+With the landmarks imported into the R Environment, and our metadata in the correct format we can now begin registering our coordinate data through a Generalised Procrustes Analysis. Previously we used `Momocs::fgProcrustes()` with our two-dimensional coordinate data, for this dataset we will use the `geomorph::gpagen()` function. We input our landmark data and include our surface sliding semilandmark data.  
+
+ランドマークがRに読み込まれ、メタデータが正しい形式になったので、一般化プロクラステス分析による座標データの入力を開始できます．最初の実習では2D座標データに`Momocs::fgProcrustes()`関数を用いましたが、今回のデータセットでは、`geomorph::gpagen()`関数を用います．ランドマークデータを入力し，サーフェス・スライディング・セミランドマークのデータを含めます． 
+
+```{r chunk30, echo=TRUE, eval=TRUE, message=FALSE}
+gpa_skull <- gpagen(skull, Proj = TRUE, ProcD = TRUE, curves = NULL, surfaces = surface_lm_skull, print.progress = F)
+```
+
+A class of gpagen data is returned. this includes the Procrustes coordinates, the centroid size, aspects of the dataset including the variance-covariance matrix and its format. We can inspect the result through the `graphics::plot()` function and customise the output using the rgl package.
+
+gpagenデータのクラスが返されます．これには、プロクルステス座標、セントロイドサイズ、分散共分散行列を含むデータセットの様相とそのフォーマットが含まれます．結果は `graphics::plot()` 関数で確認したり、rglパッケージを使って出力をカスタマイズしたりできます．
+
+```{r chunk31, echo=TRUE, eval=FALSE, message=FALSE}
+plot(gpa_skull, mean = TRUE, label = FALSE, plot.param = list(pt.cex = 0.5, mean.bg = "red"))
+```
+
+We can now inspect variation in our skull shape through a PCA. In geomorph, a PCA is formed through the `geomorph::gm.prcomp()` argument, with the input being our Procrustes coordinates. If phylogenetic data is provided then a Phyogenetically-Aligned Principal Component Analysis (PaCA) can be performed, however we are using a traditional PCA based on OLS-centering and projection.
+
+これで主成分分析(PCA)を用いて頭蓋骨の形状の変異を検証できるようになりました．geomorphでは、PCAは`geomorph::gm.prcomp()`引数を用いて実行され、入力はプロクルステス座標です．系統分類データが提供されていれば、系統的に整合した主成分分析(PaCA)を実施することができますが、ここではOLSセンタリングとプロジェクションに基づいた伝統的なPCAを用いています．
+
+```{r chunk32, echo=TRUE, eval=TRUE, message=FALSE}
+pca_skull <- gm.prcomp(gpa_skull$coords)
+summary(pca_skull)
+```
+
+We can observe that in this example the first principal component accounts for 68.08% of all cumulative shape variation, with the first five components accounting for all variation (this is surprising as the number of components is limited by your degrees of freedom).
+
+ここでは、第1主成分がすべての〈かたち〉の変化の68.08%を説明し、第1～第5主成分がすべての変化を説明することがわかりました．主成分の数は自由度によって制限されているので、これは驚くべきことです．
+
+We can also look at the three-dimensional configurations of different aspects of the principal components through an investigation of the `$shapes` component of the object.
+
+また、オブジェクトの`$shapes`成分を調査することで、主成分のさまざまな側面の3次元的な構成を見ることができます．
+
+With this we can now plot our data in base R graphics as below (or use `rgl::plot.3d()` if we're being fancy! As our .nts files are in the correct order as the dataset we can attribute colour as attached. Match functions will be necessary if these are not alligned (with the id label mirrored in the .nts and dataset files).
+
+これを用いて、以下のようにRベースのグラフィックスにデータをプロットすることができます(もっと素敵な可視化には `rgl::plot.3d()` を使ってもいいでしょう！)．.ntsファイルはデータセットと同じ順番であるため、添付のように色を属性化することができます．これらのファイルが揃っていない場合（.ntsファイルとデータセットファイルでミラーリングされたidラベルと一緒に）、マッチ関数が必要になります。
+
+```{r chunk33, echo=TRUE, eval=TRUE, message=FALSE}
+plot(pca_skull, axis1 = 1, axis2 = 2, main = "Principal Component Analysis (PC1 vs. PC2)", pch = 19, cex  = 1.5, col = skull_data$Sex, font.lab = 2)
+```
+
+There are various means with which we can explore shape variation across PC space and visualising shape patterns. One way is through `geomorph::mshape()` and `geomorph::plotRefToTarget`. For example:
+
+主成分空間全体の〈かたち〉の変異を確認したり、〈かたち〉のパターンを可視化するためには様々な手段があります．一つの方法は `geomorph::mshape()` と `geomorph::plotRefToTarget` を利用することです．例えば、以下のようになります．
+
+```{r chunk34, echo=TRUE, eval=FALSE, message=FALSE}
+plotRefToTarget(pca_skull$shapes$shapes.comp1$min, pca_skull$shapes$shapes.comp1$max, method = "points")
+```
+
+We can perform a Procrustes ANOVA and test for statistical difference between our specimens. First an object which captures all the information (coordinates and sex) must be created.  
+
+プロクルステスANOVA(共分散分析)を実行して、標本間の統計的差異を検定することができます．まず、すべての情報（座標と性別）をキャプチャするオブジェクトを作成しなければなりません．
+
+```{r chunk35, echo=TRUE, eval=TRUE, message=FALSE}
+skulldf <- geomorph.data.frame(gpa_skull, sex = skull_data$Sex)
+```
+
+Once we have our data frame we can utilise the `geomorph::procD.lm()` and `stats::anova()` functions to test for statistical difference. If we use the `geomorph::procD.lm()` and create an object we can also extract QR compositions, fitted values and residuals (observed responses).
+
+データフレームが得られたら、`geomorph::procD.lm()` と `stats::anova()` 関数を使って統計的差異を検定することができます．`geomorph::procD.lm()`を用いてオブジェクトを作成すると、QR組成、適合値、残差（観測された応答）を抽出することができます．
+
+```{r chunk36, echo=TRUE, eval=TRUE, message=FALSE}
+anova(procD.lm(coords ~ sex, data = skulldf))
+```
+
+Like the previous example, now we are finished with this case we can remove all items from the environment with the `base::rm()` as below:
+
+最初の実習と同じく、以下のとおり'base::rm()`関数で、読み込んだデータ、作成したオブジェクトをすべて削除することができます．
+
+```{r chunk37, echo=TRUE, eval=FALSE, message=FALSE}
+rm(list = ls())
+```
+
+## Case Study 3: Patella morphology vs. sex (3D)／実習3: 膝蓋骨形態と性別(3Dランドマーク)
+
+This final example is part of current research the author is conducting as part of the A Joint Effort project (https://twitter.com/UoSJointEffort), investigating the relationship in patella (kneecap) morphology, sex and behaviour.
+
+最後の実習は、講師がサザンプトン大学のA Joint Effortプロジェクト（https://twitter.com/UoSJointEffort）の一環として行っている研究の一部であり、膝蓋骨（膝頭）の形態学、性別、行動の関係を調査しています．
+
+For this final exercise 21 left-sided patellae are examined through three-dimensional geometric morphometrics. These patellae stem from a cemetery site and represent a vast array of ages and occupations. 12 female patellae and nine male patellae are here examined. 14 landmarks and 75 sliding surface semi-landmarks were digitised, corresponding to the above procedure. A variety of Type I, Type II and Type III landmarks were chosen, given the relatively few landmarks on patellae (please refer to the GitHub repository). An example patella accompanies the Github repository.  
+
+この実習では、21個の左足膝蓋骨を3D幾何形態測定学によって検証します．これらの膝蓋骨は墓地から得られたもので、年齢や職業も多岐にわたります．ここでは、女性の膝蓋骨12個と男性の膝蓋骨9個を調査しました．14個のランドマークと75個のサーフェイス・スライダー・セミランドマークが、実習2と同じ手順でデジタイズされました．膝蓋骨のランドマークが比較的少ないことを考慮して、Type I、Type II、Type IIIの様々なランドマークを選択しました（GitHubリポジトリを参照してください）．膝蓋骨のサンプルがGithubリポジトリに添付されています．
+
+Like before, we will download the dataset (with sex data), the sliding surface data and the .nts data through the functions in the rio package. A fourth file detailing the links between the landmarks is also included here. For reference:  
+
+実習2と同様に、データセット（性別データを含む）、サーフェス・スライダー・データ、.ntsデータをrioパッケージの関数を使ってダウンロードします．ランドマーク間の結合を詳細に記述した4つ目のファイルもここに含まれています．参考までに：
+
+* *patella_dataset*: the .csv file (containing the metadata)／膝蓋骨データ(.csvファイル)  
+* *patella_lm*: the multi.nts object (containing the landmark data)／ランドマークデータを含む.ntsファイル  
+* *patella_links*: the links between landmarks (for visualisation)／ランドマークの結合データ(表示用)  
+* *patella_surfslide*: the landmarks which are sliding surface semilandmarks／セミランドマーク・データ  
+
+```{r, chunk38, echo=TRUE, eval=TRUE, message=FALSE}
+patella_dataset <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_3/patella_dataset.rds")
+
+patella_lm <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_3/patella_lm.rds")
+
+patella_links <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_3/patella_links.rds")   
+
+patella_surfslide <- rio::import("https://github.com/CSHoggard/-workshopjapan2020/raw/master/workshop_3/patella_surfslide.rds")   
+
+```
+
+As before, we need to inspect the dataset and its attributes. An inspection of the dataset with `utils::head()` reveals that the sex column is character in type, and like before we require the data to be factor (fct) in nature. We also require our surface sliding semilandmarks to be in matrix form.
+
+前述のように、データセットとその属性を確認する必要があります。データセットを `utils::head()` で検証すると、性別の列が文字型であることがわかります。また、サーフェス・スライダー・セミランドマークも行列でなければなりません．
+
+```{r chunk39, echo=TRUE, eval=TRUE, message=FALSE}
+head(patella_dataset)
+patella_dataset$sex <- as.factor(patella_dataset$sex)
+is.factor(patella_dataset$sex)
+
+patella_surfslide <- as.matrix(patella_surfslide)
+```
+
+With our data now in the R Environment we can now plot like previously, and conduct the Generalised Procrustes Analysis using the `geomorph::gpagen()` function.  
+
+Using the usual graphical parameters... 
+
+データがRに読み込まれたので、同じようにプロットし、`geomorph::gpagen()`関数を使って一般化プロクラステス分析を行ないます． 
+
+```{r chunk40, echo=TRUE, eval=FALSE, message=FALSE}
+patella_lm[,,1]
+
+# OR
+
+# rgl.open()
+# rgl.points(patella_lm[,,1], r = 0.2)
+```
+
+And for the Generalised Procrustes Analysis...
+
+一般化プロクルステス分析は以下のとおりです(チャンク41)．
+
+```{r chunk41, echo=TRUE, eval=TRUE, message=FALSE}
+gpa_patella <- gpagen(patella_lm, Proj = TRUE, ProcD = TRUE, curves = NULL, surfaces = patella_surfslide)
+```
+
+We can now examine the Procrustes coordinates:  
+
+これによりプロクルステス座標を検討することができます．
+
+```{r chunk42, echo=TRUE, eval=FALSE, message=FALSE}
+plot(gpa_patella, links = patella_links, plot.param = list(pt.cex = 0.5, mean.cex = 5, mean.bg = "red"))
+```
+
+All our specimens appear to plot correctly, with the landmarks correctly plotted and the Generalised Procrustes Analysis a success. Now we can use these Procrustes coordinates to create a Principal Component Analysis, and investigate sources of shape variation between sex.  
+
+すべての標本が、ランドマークとともにが正しくプロットされ、一般化プロクラステス分析が成功したようです．これで、これらのプロクルステス座標を用いて主成分分析を実施し、男女間の膝蓋骨の〈かたち〉のばらつきの原因を調べることができます．
+
+```{r chunk43, echo=TRUE, eval=TRUE, message=FALSE}
+pca_patella <- gm.prcomp(gpa_patella$coords)
+summary(pca_patella)
+```
+
+Interestingly our principal components, individually and as a percentage of cumulative shape variance, are much lower than our previous case studies with the first four principal components totalling slightly higher of 50%. This may be because there are more nuanced changes in patella shape throughout the chosen examples.  
+
+興味深いことに、今回の主成分分析の結果は、個々の主成分の累積パーセンテージでは、最初の4つの主成分の合計が50%です．これまでの事例よりもはるかに低くなっています．これは、選択した標本全体を通して、膝蓋骨の形状により微妙な変化があるためかもしれません． 
+
+```{r chunk44, echo=TRUE, eval=TRUE, message=FALSE}
+plot(pca_patella, axis1 = 1, axis2 = 2, main = "Principal Component Analysis (PC1 vs. PC2)", pch = 19, cex  = 1.5, col = patella_dataset$sex, font.lab = 2)
+```
+
+Alternatively, we may wish to plot these scores within a 'tidy' framework i.e. using the graphical principles of the tidyverse package. To do so, a number of procedures are first necessary. We must isolate the principal component scores and our data, convert them into tibble (a new kind of data frame format), and then bind together. The process is as follows:
+
+また、これらの主成分スコアを'tidy'なフレームワーク、つまりtidyverseパッケージのグラフィクスを使ってプロットしたいと思うかもしれません．そのためには、最初にいくつかの手続きが必要です。主成分スコアとデータを分離し、それらをtibble（新しい種類のデータフレームフォーマット）に変換し、結合しなければなりません．その手順は以下の通りです．
+
+```{r chunk45, echo=TRUE, eval=TRUE, message=FALSE}
+pca.scores <- as_tibble(pca_patella$x, rownames = "rownames") %>% column_to_rownames("rownames")
+data <- as_tibble(patella_dataset, rownames = "rownames") %>% column_to_rownames("rownames")
+pca.sex.scores <- bind_cols(data, pca.scores)
+```
+
+Now we can recreate the same plot as above but not in the tidyverse:
+
+tidyverseを使用しなくても同じようなプロットが可能です．
+
+```{r chunk46, echo=TRUE, eval=TRUE, message=FALSE}
+ggplot(pca.sex.scores, aes(Comp1, Comp2, colour = sex)) + geom_point(size = 3) + stat_ellipse(level = 0.66) + coord_fixed() + labs(x = "Principal Component 1", y = "Principal Component 2")
+```
+
+One of geomorph's more recent additions is `geomorph::picknplot.shape()`, an interactive function to select shapes on a principal component analysis. A PCA plot must be first created. We can then use the picknplot.shape function to select a specific example. For example:
+
+geomorphの最近の追加機能の一つに `geomorph::picknplot.shape()` があります。これは主成分分析で〈かたち〉を選択するための双方向的な関数です．まず、PCAプロットを作成しなければなりません．そして、特定のサンプルを選択するために picknplot.shape 関数を使うことができます．例えば、以下のようになります．
+
+```{r chunk47, echo=TRUE, eval=FALSE, message=FALSE}
+plot(pca_patella, axis1 = 1, axis2 = 2)
+
+plot1 <- plot(pca_patella, axis1 = 1, axis2 = 2)
+
+picknplot.shape(plot1, method = "vector", links = patella_links)
+```
+
+Alternatively, we can use `geomorph::plotRefToTarget()`:
+
+`geomorph::plotRefToTarget()`関数を使うことも可能です．
+
+```{r chunk48, echo=TRUE, eval=FALSE, message=FALSE}
+plotRefToTarget(pca_patella$shapes$shapes.comp1$min, pca_patella$shapes$shapes.comp1$max)
+```
+
+Now we have an idea of the specific shape changes between sex, let's perform a Procrustes ANOVA and see if our null hypothesis, of morphological correspondence between sex, is accepted. We first need to construct a data frame, to hold all our data, and then perform a Procrustes ANOVA like before:  
+
+性別と膝蓋骨の特定の〈かたち〉の変化に対応はあるのでしょうか? プロクルステスANOVAを実行して、帰無仮説が棄却されるかどうかを検討しましょう。まず、すべてのデータを保持するためにデータ・フレームを構築し、実習2と同様にプロクルステスANOVAを実行します．
+
+```{r chunk49, echo=TRUE, eval=TRUE, message=FALSE}
+df_patella <- geomorph.data.frame(gpa_patella, sex = patella_dataset$sex)
+
+anova(procD.lm(coords ~ sex, data = df_patella))
+```
+
+So we can reject the null hypothesis and conclude that there is a difference in the morphology of patella with respect to sex. 
+
+One final thing we will do here is produce a hierarchical cluster of our patella, so we can examine which are closest. This may be useful with other forms of data (e.g. age, family or occupation). To do this we can first create a tibble of our Procrustes coordinates and then use the `stats::hclust` and `stats::dist` to perform a hierarchical cluster analysis on a distance matrix of our coordinates.
+
+帰無仮説は棄却され、膝蓋骨の〈かたち〉には性別による違いがあると結論づけることができました．
+
+最後に、膝蓋骨の階層的クラスタを作成します．これは、他の要素（例えば、年齢、家族、職業など）にも適用できるかもしれません．これを行うには、まずプロクルステス座標のtibbleデータを作成し、`stats::hclust` と `stats::dist` を用いて座標の距離行列により階層的クラスタ分析を行います．
+
+```{r chunk50, echo=TRUE, eval=TRUE, message=FALSE}
+coords_gpa <- as_tibble(two.d.array(gpa_patella$coords), rownames = "rownames") %>% column_to_rownames("rownames")
+
+plot(hclust(dist(coords_gpa)), hang = -1, cex = 0.6)
+```
+
+## **Concluding remarks**
+
+There are  many others way to conduct what has been performed above, so don't treat the code as law. However, in exploring a number of different studies, and through the use of different packages, this guide/tutorial has hoped to highlight the analytical potential of geometric morpometrics. In each of these case studies, there was plenty more to discover; we have only began to scratch at the capabilities of the datasets collected here, and any number of exploratory and analytical procedures could be further performed.  
+
+今日実習した内容を実行する方法は他にもたくさんあります．今日実行したコードを絶対的なものとして扱わないでください．異なる研究を探索し、異なるパッケージを使用することで、幾何形態測定学による分析の可能性が強化されることを期待しています．いずれの事例においても、探索すべきことはまだたくさんあります．ここで使用したデータセットは手探りで集め始めたばかりのものであり、さらに多くの探索や分析が実行されるべきです．
+
+## References
+
+Vestergaard, C. and Hoggard, C.S. (2019). A Novel Geometric Morphometric (GMM) Application to the Study of Bronze Age Tutuli. *Danish Journal of Archaeology*, 8: 5-28.  
+
+Kovarovic, K., Aiello, L.C., Cardini, A. and Lockwood, C.A. 2011. Discriminant function analyses in archaeology: Are classification rates too good to be true? *Journal of Archaeological Science*, 38(11): 3006–3018.  
