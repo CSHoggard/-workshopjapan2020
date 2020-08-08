@@ -1,6 +1,6 @@
 ---
-title: '**Archaeological Geometric Morphometrics and R／考古学における幾何形体測定学とR**'
-author: "Dr Christian Steven Hoggard (University of Southampton, United Kingdom)"
+title: '**Archaeological Geometric Morphometrics and R／考古学における幾何形態測定学とR**'
+author: c("Dr Christian Steven Hoggard (University of Southampton, United Kingdom)", "Atsushi Noguchi (translator)")
 subtitle: 'As part of the #StayHomeButStudy Workshop Series'
 output:
   pdf_document:
